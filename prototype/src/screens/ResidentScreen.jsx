@@ -413,10 +413,6 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
             >
               <span>📢</span> Send to Site Environmental Officer
             </button>
-
-            <div style={{ fontSize: '12px', color: '#64748B', textAlign: 'center' }}>
-              ⚡ Site Environmental Officer on duty: <strong>Kak Nurul</strong> (Average on-site investigation: under 20 minutes)
-            </div>
           </form>
         </section>
 
