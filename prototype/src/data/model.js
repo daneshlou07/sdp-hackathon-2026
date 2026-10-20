@@ -95,6 +95,11 @@ export function simulateForecastDay(site, forecastDay, smart = true) {
     ? (WEATHER[forecastDay] ? WEATHER[forecastDay].factor : () => 1)
     : getSolarFactorForForecast(forecastDay);
 
+  const rainProb = typeof forecastDay === 'object' ? (forecastDay?.rainProbability || 0) : 0;
+  const isRainDay = rainProb >= 50;
+  const stormStart = typeof forecastDay === 'object' ? (forecastDay?.stormStart || 13) : 13;
+  const stormEnd = typeof forecastDay === 'object' ? (forecastDay?.stormEnd || 16) : 16;
+
   let soc = site.soc0 * site.bessKWh;
   const hours = [];
   let gensetKWh = 0;
@@ -102,7 +107,32 @@ export function simulateForecastDay(site, forecastDay, smart = true) {
   let loadKWh = 0;
   for (let h = 0; h < 24; h++) {
     const solar = site.solarKWp * solarShape(h) * factor(h);
-    const { total: load, parts } = loadAt(site, h, smart);
+
+    // Smart weather dispatch: adjust shiftable loads and respect lightning storm safety
+    let load = 0;
+    const parts = {};
+    for (const eq of site.equipment) {
+      let kw = 0;
+      if (eq.id === 'fork') {
+        if (smart && isRainDay) {
+          // Shift EV forklift charging to clean morning solar (9am to 1pm); pause during storm window
+          kw = (h >= 9 && h <= 12) ? eq.kw : 0;
+        } else if (smart) {
+          kw = (eq.shifted || eq.hours).includes(h) ? eq.kw : 0;
+        } else {
+          kw = eq.hours.includes(h) ? eq.kw : 0;
+        }
+      } else if (eq.id === 'crane' && smart && isRainDay && h >= stormStart && h <= stormEnd) {
+        // High-altitude crane active hoisting paused during thunderstorm lightning risk (standby idle)
+        kw = 10;
+      } else {
+        const hrs = smart && eq.shifted ? eq.shifted : eq.hours;
+        kw = hrs.includes(h) ? eq.kw : 0;
+      }
+      parts[eq.id] = kw;
+      load += kw;
+    }
+
     let net = solar - load;
     let charge = 0;
     let discharge = 0;

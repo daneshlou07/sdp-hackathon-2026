@@ -1,15 +1,13 @@
 import { useState } from 'react';
 
-export function DayChart({ hours, now, height = 220, stormWindow = null }) {
-  const [hoveredIdx, setHoveredIdx] = useState(14); // Default to 2:00 PM storm window
+export function DayChart({ hours, now, height = 230, stormWindow = null }) {
+  const [hoveredIdx, setHoveredIdx] = useState(14); // Default to 2:00 PM
   const W = 740;
   const H = height;
-  const pad = { l: 68, r: 48, t: 34, b: 30 };
-  const max = Math.max(...hours.map((x) => Math.max(x.load, x.solar)), 10) * 1.1;
+  const pad = { l: 72, r: 24, t: 36, b: 32 };
+  const max = Math.max(...hours.map((x) => Math.max(x.load, x.solar)), 10) * 1.15;
   const bw = (W - pad.l - pad.r) / 24;
   const y = (v) => H - pad.b - (v / max) * (H - pad.t - pad.b);
-  const ySoc = (s) => H - pad.b - s * (H - pad.t - pad.b);
-  const socPath = hours.map((x, i) => `${i ? 'L' : 'M'}${pad.l + bw * i + bw / 2},${ySoc(x.soc)}`).join(' ');
 
   const formatHour = (h) => (h === 0 ? '12 AM' : h === 12 ? '12 PM' : h < 12 ? `${h} AM` : `${h - 12} PM`);
 
@@ -18,13 +16,13 @@ export function DayChart({ hours, now, height = 220, stormWindow = null }) {
   const activeBatt = active.discharge;
   const activeGen = active.genset;
   const activeTotal = active.load;
-  const activeSoc = Math.round(active.soc * 100);
+  const activeSoc = active.soc * 100;
   const activeTime = formatHour(active.h);
   const isStorm = stormWindow && active.h >= stormWindow.from && active.h <= stormWindow.to;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      {/* Interactive Detail Inspection Bar */}
+      {/* Detailed Inspection Bar with Specific 2-Decimal Numbers */}
       <div
         style={{
           display: 'flex',
@@ -44,33 +42,30 @@ export function DayChart({ hours, now, height = 220, stormWindow = null }) {
           </span>
           {isStorm && (
             <span style={{ fontSize: '11px', fontWeight: 700, color: '#0369A1', background: '#E0F2FE', padding: '3px 8px', borderRadius: 4 }}>
-              🌧️ Rain Storm Window
+              🌧️ Rain Window (Protected)
             </span>
           )}
           <span style={{ fontSize: '13px', color: '#334155' }}>
-            Site Power Demand: <strong>{activeTotal} kW</strong>
+            Site Power Demand: <strong style={{ color: '#0F172A' }}>{activeTotal.toFixed(2)} kW</strong>
           </span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: '12px', flexWrap: 'wrap' }}>
-          <span style={{ color: '#D97706', fontWeight: 600 }}>☀️ Solar: <strong>{activeSolar} kW</strong></span>
-          <span style={{ color: '#0F766E', fontWeight: 600 }}>🔋 Battery: <strong>{activeBatt} kW</strong></span>
-          <span style={{ color: '#475569', fontWeight: 600 }}>⛽ Genset: <strong>{activeGen} kW</strong></span>
+          <span style={{ color: '#D97706', fontWeight: 600 }}>☀️ Solar: <strong>{activeSolar.toFixed(2)} kW</strong></span>
+          <span style={{ color: '#0F766E', fontWeight: 600 }}>🔋 Battery: <strong>{activeBatt.toFixed(2)} kW</strong></span>
+          <span style={{ color: activeGen > 0 ? '#DC2626' : '#64748B', fontWeight: 600 }}>
+            ⛽ Genset: <strong>{activeGen.toFixed(2)} kW</strong>
+          </span>
           <span style={{ color: '#047857', fontWeight: 700, background: '#ECFDF5', border: '1px solid #A7F3D0', padding: '3px 8px', borderRadius: 4 }}>
-            Battery Level: {activeSoc}% Full
+            Battery Level: {activeSoc.toFixed(2)}% Full
           </span>
         </div>
       </div>
 
-      <svg className="chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Hourly solar, battery, backup generator and battery charge" style={{ cursor: 'pointer' }}>
-        {/* Left Y-Axis Header */}
-        <text x={pad.l} y={pad.t - 14} fontSize="11" fontWeight="700" textAnchor="start" fill="#334155">
+      <svg className="chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="24-Hour hourly power schedule showing solar, battery, and backup generator power in kW" style={{ cursor: 'pointer' }}>
+        {/* Left Y-Axis Header: Only Power Flow kW */}
+        <text x={pad.l} y={pad.t - 16} fontSize="11" fontWeight="700" textAnchor="start" fill="#334155">
           Power Flow (kW)
-        </text>
-
-        {/* Right Y-Axis Header */}
-        <text x={W - pad.r} y={pad.t - 14} fontSize="11" fontWeight="700" textAnchor="end" fill="#0F766E">
-          Battery Level (%)
         </text>
 
         {/* Storm Window Highlight */}
@@ -109,20 +104,18 @@ export function DayChart({ hours, now, height = 220, stormWindow = null }) {
           </g>
         )}
 
-        {/* Left Y-Axis Grid Lines & Labels */}
-        {[0, 0.5, 1].map((t) => (
-          <g key={t}>
-            <line x1={pad.l} x2={W - pad.r} y1={y(max * t / 1.1)} y2={y(max * t / 1.1)} stroke="#E2E8F0" />
-            <text x={pad.l - 8} y={y(max * t / 1.1) + 4} fontSize="10" fontWeight="600" textAnchor="end" fill="#64748B">
-              {Math.round(max * t / 1.1)} kW
-            </text>
-          </g>
-        ))}
-
-        {/* Right Y-Axis Grid Labels */}
-        <text x={W - pad.r + 8} y={ySoc(1) + 4} fontSize="10" fontWeight="600" fill="#0F766E">100%</text>
-        <text x={W - pad.r + 8} y={ySoc(0.5) + 4} fontSize="10" fontWeight="600" fill="#0F766E">50%</text>
-        <text x={W - pad.r + 8} y={ySoc(0) + 4} fontSize="10" fontWeight="600" fill="#0F766E">0%</text>
+        {/* Left Y-Axis Grid Lines & Specific 2-Decimal Labels */}
+        {[0, 0.5, 1].map((t) => {
+          const val = (max * t) / 1.15;
+          return (
+            <g key={t}>
+              <line x1={pad.l} x2={W - pad.r} y1={y(val)} y2={y(val)} stroke="#E2E8F0" />
+              <text x={pad.l - 8} y={y(val) + 4} fontSize="10" fontWeight="600" textAnchor="end" fill="#64748B">
+                {val.toFixed(2)} kW
+              </text>
+            </g>
+          );
+        })}
 
         {/* Hover Highlight Column */}
         {hoveredIdx !== null && (
@@ -132,9 +125,9 @@ export function DayChart({ hours, now, height = 220, stormWindow = null }) {
             width={bw}
             height={H - pad.b - pad.t}
             fill="#0F766E"
-            fillOpacity="0.12"
+            fillOpacity="0.10"
             stroke="#0F766E"
-            strokeWidth="1"
+            strokeWidth="1.5"
             rx="2"
           />
         )}
@@ -145,11 +138,32 @@ export function DayChart({ hours, now, height = 220, stormWindow = null }) {
           const x0 = pad.l + bw * i + 2;
           const w = bw - 4;
           const isSelected = hoveredIdx === i;
+          const totalY = y(fromSolar + x.discharge + x.genset);
+
           return (
-            <g key={i} opacity={hoveredIdx !== null && !isSelected ? 0.8 : 1}>
+            <g key={i} opacity={hoveredIdx !== null && !isSelected ? 0.75 : 1}>
+              {/* Stack 1: Solar */}
               <rect x={x0} y={y(fromSolar)} width={w} height={Math.max(0, y(0) - y(fromSolar))} fill="var(--solar)" rx="1" />
+              {/* Stack 2: Battery */}
               <rect x={x0} y={y(fromSolar + x.discharge)} width={w} height={Math.max(0, y(0) - y(x.discharge))} fill="var(--batt)" rx="1" />
+              {/* Stack 3: Backup Genset (if any) */}
               <rect x={x0} y={y(fromSolar + x.discharge + x.genset)} width={w} height={Math.max(0, y(0) - y(x.genset))} fill="var(--gen)" rx="1" />
+
+              {/* Specific Numbers directly above each bar (every 3 hours or when selected) */}
+              {(isSelected || (i % 3 === 0 && x.load > 0)) && (
+                <text
+                  x={x0 + w / 2}
+                  y={Math.max(pad.t + 10, totalY - 5)}
+                  fontSize={isSelected ? '9.5' : '8.5'}
+                  fontWeight={isSelected ? '800' : '600'}
+                  textAnchor="middle"
+                  fill={isSelected ? '#0F172A' : '#64748B'}
+                >
+                  {x.load.toFixed(2)} kW
+                </text>
+              )}
+
+              {/* X-Axis Hour Label */}
               {i % 3 === 0 && (
                 <text x={x0 + w / 2} y={H - 10} fontSize="10" fontWeight={isSelected ? '800' : '600'} textAnchor="middle" fill={isSelected ? '#0F766E' : '#64748B'}>
                   {formatHour(i)}
@@ -158,21 +172,6 @@ export function DayChart({ hours, now, height = 220, stormWindow = null }) {
             </g>
           );
         })}
-
-        {/* Battery State of Charge Line */}
-        <path d={socPath} fill="none" stroke="#0F766E" strokeWidth="2.5" strokeDasharray="4 3" />
-
-        {/* Active Dot on Battery Line */}
-        {hoveredIdx !== null && (
-          <circle
-            cx={pad.l + bw * hoveredIdx + bw / 2}
-            cy={ySoc(hours[hoveredIdx].soc)}
-            r="4.5"
-            fill="#0F766E"
-            stroke="#FFFFFF"
-            strokeWidth="2"
-          />
-        )}
 
         {/* Transparent Click & Hover overlay columns */}
         {hours.map((x, i) => (
@@ -190,12 +189,11 @@ export function DayChart({ hours, now, height = 220, stormWindow = null }) {
         ))}
       </svg>
 
-      {/* Legend with crystal clear explanation */}
+      {/* Clean Legend Showing Only Necessary Components */}
       <div className="legend" style={{ display: 'flex', justifyContent: 'center', gap: 20, flexWrap: 'wrap', marginTop: 4 }}>
         <span><i style={{ background: 'var(--solar)' }} />Solar Power (kW)</span>
         <span><i style={{ background: 'var(--batt)' }} />Battery Power (kW)</span>
         <span><i style={{ background: 'var(--gen)' }} />Backup Generator (kW)</span>
-        <span><i style={{ background: 'transparent', borderTop: '2.5px dashed #0F766E', height: 0 }} />Battery Level (%)</span>
       </div>
     </div>
   );
