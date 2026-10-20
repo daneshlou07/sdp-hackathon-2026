@@ -5,7 +5,6 @@ import { SITES } from '../data/sites';
 import { limitAt, noiseDay, status, SEED_COMPLAINTS } from '../data/noise';
 import { simulateDay, monthly, fmt } from '../data/model';
 import { getEchoShieldAttribution } from '../data/aiEngine';
-import AiCopilotModal from '../components/AiCopilotModal';
 
 const TABS = [
   { id: 'meter', label: 'Boundary Sound & DOE Limits', icon: '🔊' },
@@ -33,7 +32,6 @@ export default function EoScreen({
   const [activeTab, setActiveTab] = useState('meter');
   const [hour, setHour] = useState(11);
   const [showModal, setShowModal] = useState(false);
-  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [localComplaints, setLocalComplaints] = useState(SEED_COMPLAINTS);
   const complaints = propComplaints || localComplaints;
   const [resolvingId, setResolvingId] = useState(null);
@@ -785,8 +783,6 @@ export default function EoScreen({
         </div>
       )}
 
-      {/* AI Modal */}
-      <AiCopilotModal isOpen={isAiModalOpen} onClose={() => setIsAiModalOpen(false)} role="eo" />
     </Shell>
   );
 }

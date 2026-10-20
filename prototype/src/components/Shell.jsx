@@ -1,6 +1,4 @@
-import { useState } from 'react';
 import { SITES } from '../data/sites';
-import AiCopilotModal from './AiCopilotModal';
 
 export default function Shell({
   user,
@@ -16,7 +14,6 @@ export default function Shell({
   onLogout,
   children,
 }) {
-  const [aiOpen, setAiOpen] = useState(false);
 
   return (
     <div className="shell">
@@ -112,44 +109,6 @@ export default function Shell({
           </div>
         </div>
 
-        {/* AI Copilot Quick Launch Button */}
-        <div>
-          <button
-            id="open-ai-copilot"
-            onClick={() => setAiOpen(true)}
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '8px 12px',
-              backgroundColor: '#0F766E',
-              color: '#FFFFFF',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-            }}
-          >
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span>⚡</span> Ask SiteOps AI
-            </span>
-            <span
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.2)',
-                padding: '2px 5px',
-                borderRadius: '4px',
-                fontSize: '10px',
-                fontWeight: 600,
-              }}
-            >
-              ML Copilot
-            </span>
-          </button>
-        </div>
-
         {/* User Role Card & Logout */}
         <div className="side-user">
           <div>
@@ -164,13 +123,6 @@ export default function Shell({
 
       {/* Main Focused Content View */}
       <main className="main">{children}</main>
-
-      {/* Modal */}
-      <AiCopilotModal
-        isOpen={aiOpen}
-        onClose={() => setAiOpen(false)}
-        role={user?.role || 'me'}
-      />
     </div>
   );
 }

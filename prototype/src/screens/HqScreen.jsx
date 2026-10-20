@@ -3,7 +3,6 @@ import Shell from '../components/Shell';
 import { Bars } from '../components/Charts';
 import { FLEET_NEXT } from '../data/sites';
 import { DIESEL_RM_PER_L, monthly, fmt } from '../data/model';
-import AiCopilotModal from '../components/AiCopilotModal';
 
 const TABS = [
   { id: 'savings', label: 'Executive P&L & Fuel Ticker', icon: '💰' },
@@ -16,7 +15,6 @@ const TABS = [
 export default function HqScreen({ user, sites = [], onAddSite, onLogout }) {
   const [activeTab, setActiveTab] = useState('savings');
   const [dieselPrice, setDieselPrice] = useState(DIESEL_RM_PER_L);
-  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [showAddSiteModal, setShowAddSiteModal] = useState(false);
 
   // Transfer approvals state
@@ -182,24 +180,6 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
             }}
           >
             <span>+</span> Commission New Township Site
-          </button>
-          <button
-            onClick={() => setIsAiModalOpen(true)}
-            style={{
-              padding: '6px 12px',
-              backgroundColor: '#0F766E',
-              color: '#FFFFFF',
-              borderRadius: '8px',
-              border: 'none',
-              fontWeight: 700,
-              fontSize: '13px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            <span>⚡</span> Open HQ Strategy AI Copilot
           </button>
           <div className="price-input card" style={{ padding: '4px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 12, fontWeight: 600 }}>Commercial Diesel:</span>
@@ -729,8 +709,6 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
         </div>
       )}
 
-      {/* AI Modal */}
-      <AiCopilotModal isOpen={isAiModalOpen} onClose={() => setIsAiModalOpen(false)} role="hq" />
     </Shell>
   );
 }

@@ -5,7 +5,6 @@ import { SITES } from '../data/sites';
 import { WEATHER, planTips, monthly, fmt, GENSET_KWH_PER_L, DIESEL_RM_PER_L, simulateDay, simulateForecastDay } from '../data/model';
 import { getSolarCastForecast } from '../data/aiEngine';
 import { fetchLiveSiteWeather, getGoogleWeatherApiKey, setGoogleWeatherApiKey } from '../data/weatherService';
-import AiCopilotModal from '../components/AiCopilotModal';
 
 const TABS = [
   { id: 'flow', label: 'Battery & Power Flow', icon: '⚡' },
@@ -23,7 +22,6 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [hour, setHour] = useState(11);
   const [smart, setSmart] = useState(true);
-  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [gensetLockedOut, setGensetLockedOut] = useState(true);
   const [dormAuditRan, setDormAuditRan] = useState(false);
   const [isAddEqModalOpen, setIsAddEqModalOpen] = useState(false);
@@ -238,26 +236,6 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
           <p>
             {site.kind} | BESS {site.bessKWh} kWh ({site.bessKW} kW Inverter) | Solar {site.solarKWp} kWp
           </p>
-        </div>
-        <div className="top-meta" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <button
-            onClick={() => setIsAiModalOpen(true)}
-            style={{
-              padding: '6px 12px',
-              backgroundColor: '#0F766E',
-              color: '#FFFFFF',
-              borderRadius: '8px',
-              border: 'none',
-              fontWeight: 700,
-              fontSize: '13px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            <span>⚡</span> Open M&E AI Copilot
-          </button>
         </div>
       </div>
 
@@ -900,8 +878,6 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
         </div>
       )}
 
-      {/* AI Modal */}
-      <AiCopilotModal isOpen={isAiModalOpen} onClose={() => setIsAiModalOpen(false)} role="me" />
     </Shell>
   );
 }
