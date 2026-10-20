@@ -278,32 +278,34 @@ export default function EoScreen({
           {/* Silt Traps & Drainage Status Table */}
           <section className="card">
             <h2 style={{ fontSize: '16px', margin: '0 0 12px 0' }}>Perimeter Drainage & Silt Trap Monitoring Points</h2>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-              <thead>
-                <tr style={{ textAlign: 'left', borderBottom: '1px solid #E2E8F0', color: '#64748B' }}>
-                  <th style={{ padding: '8px' }}>Monitoring Point</th>
-                  <th style={{ padding: '8px' }}>Turbidity</th>
-                  <th style={{ padding: '8px' }}>TSS</th>
-                  <th style={{ padding: '8px' }}>pH</th>
-                  <th style={{ padding: '8px' }}>Legal Limit</th>
-                  <th style={{ padding: '8px' }}>Condition</th>
-                </tr>
-              </thead>
-              <tbody>
-                {DRAINAGE_POINTS.map((dp) => (
-                  <tr key={dp.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                    <td style={{ padding: '10px 8px', fontWeight: 600, color: '#0F172A' }}>{dp.name}</td>
-                    <td style={{ padding: '10px 8px', fontWeight: 700, color: '#059669' }}>{dp.turbidity.toFixed(2)} NTU</td>
-                    <td style={{ padding: '10px 8px' }}>{dp.tss.toFixed(2)} mg/L</td>
-                    <td style={{ padding: '10px 8px' }}>{dp.ph.toFixed(2)}</td>
-                    <td style={{ padding: '10px 8px', color: '#64748B' }}>{dp.limit}</td>
-                    <td style={{ padding: '10px 8px' }}>
-                      <span className="tag ok">Normal</span>
-                    </td>
+            <div className="table-responsive">
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                <thead>
+                  <tr style={{ textAlign: 'left', borderBottom: '1px solid #E2E8F0', color: '#64748B' }}>
+                    <th style={{ padding: '8px' }}>Monitoring Point</th>
+                    <th style={{ padding: '8px' }}>Turbidity</th>
+                    <th style={{ padding: '8px' }}>TSS</th>
+                    <th style={{ padding: '8px' }}>pH</th>
+                    <th style={{ padding: '8px' }}>Legal Limit</th>
+                    <th style={{ padding: '8px' }}>Condition</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {DRAINAGE_POINTS.map((dp) => (
+                    <tr key={dp.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                      <td style={{ padding: '10px 8px', fontWeight: 600, color: '#0F172A' }}>{dp.name}</td>
+                      <td style={{ padding: '10px 8px', fontWeight: 700, color: '#059669' }}>{dp.turbidity.toFixed(2)} NTU</td>
+                      <td style={{ padding: '10px 8px' }}>{dp.tss.toFixed(2)} mg/L</td>
+                      <td style={{ padding: '10px 8px' }}>{dp.ph.toFixed(2)}</td>
+                      <td style={{ padding: '10px 8px', color: '#64748B' }}>{dp.limit}</td>
+                      <td style={{ padding: '10px 8px' }}>
+                        <span className="tag ok">Normal</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
         </div>
       )}
@@ -705,21 +707,23 @@ export default function EoScreen({
               </div>
 
               <h3 style={{ fontSize: '14px', margin: '10px 0 6px 0', color: '#0F172A' }}>1. Water & Silt Runoff Compliance</h3>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', marginBottom: 12 }}>
-                <thead>
-                  <tr style={{ background: '#F1F5F9', textAlign: 'left' }}>
-                    <th style={{ padding: 6 }}>Parameter</th>
-                    <th style={{ padding: 6 }}>Site Average</th>
-                    <th style={{ padding: 6 }}>Statutory Limit</th>
-                    <th style={{ padding: 6 }}>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td style={{ padding: 6 }}>Turbidity</td><td style={{ padding: 6 }}>18.20 NTU</td><td style={{ padding: 6 }}>&lt; 50.00 NTU</td><td style={{ padding: 6, color: '#059669', fontWeight: 700 }}>Pass</td></tr>
-                  <tr><td style={{ padding: 6 }}>Suspended Solids (TSS)</td><td style={{ padding: 6 }}>24.50 mg/L</td><td style={{ padding: 6 }}>&lt; 50.00 mg/L</td><td style={{ padding: 6, color: '#059669', fontWeight: 700 }}>Pass</td></tr>
-                  <tr><td style={{ padding: 6 }}>pH Level</td><td style={{ padding: 6 }}>7.40</td><td style={{ padding: 6 }}>6.00 to 9.00</td><td style={{ padding: 6, color: '#059669', fontWeight: 700 }}>Pass</td></tr>
-                </tbody>
-              </table>
+              <div className="table-responsive">
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', marginBottom: 12 }}>
+                  <thead>
+                    <tr style={{ background: '#F1F5F9', textAlign: 'left' }}>
+                      <th style={{ padding: 6 }}>Parameter</th>
+                      <th style={{ padding: 6 }}>Site Average</th>
+                      <th style={{ padding: 6 }}>Statutory Limit</th>
+                      <th style={{ padding: 6 }}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td style={{ padding: 6 }}>Turbidity</td><td style={{ padding: 6 }}>18.20 NTU</td><td style={{ padding: 6 }}>&lt; 50.00 NTU</td><td style={{ padding: 6, color: '#059669', fontWeight: 700 }}>Pass</td></tr>
+                    <tr><td style={{ padding: 6 }}>Suspended Solids (TSS)</td><td style={{ padding: 6 }}>24.50 mg/L</td><td style={{ padding: 6 }}>&lt; 50.00 mg/L</td><td style={{ padding: 6, color: '#059669', fontWeight: 700 }}>Pass</td></tr>
+                    <tr><td style={{ padding: 6 }}>pH Level</td><td style={{ padding: 6 }}>7.40</td><td style={{ padding: 6 }}>6.00 to 9.00</td><td style={{ padding: 6, color: '#059669', fontWeight: 700 }}>Pass</td></tr>
+                  </tbody>
+                </table>
+              </div>
 
               <h3 style={{ fontSize: '14px', margin: '10px 0 6px 0', color: '#0F172A' }}>2. Boundary Acoustic Compliance (DOE Schedule 6)</h3>
               <div style={{ background: '#ECFDF5', padding: 10, borderRadius: 6, color: '#065F46', fontSize: '12px', marginBottom: 12 }}>

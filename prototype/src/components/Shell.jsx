@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { SITES } from '../data/sites';
 
 export default function Shell({
@@ -14,19 +15,89 @@ export default function Shell({
   onLogout,
   children,
 }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleTabSelect = (tabId) => {
+    if (onTabChange) onTabChange(tabId);
+    setMobileMenuOpen(false);
+  };
 
   return (
     <div className="shell">
-      <aside className="side" aria-label="Sidebar">
+      {/* Mobile Top Header (Hidden on Desktop) */}
+      <header className="mobile-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span className="brand-mark">GP</span>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: '15px', color: '#FFFFFF', lineHeight: 1.1 }}>GreenPulse</div>
+            <div style={{ fontSize: '11px', color: '#94A3B8' }}>{area}</div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {showSites && (
+            <select
+              className="site-select-mobile"
+              value={siteId}
+              onChange={(e) => onSite && onSite(e.target.value)}
+              aria-label="Select active project site"
+            >
+              {sites.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.short}
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="mobile-menu-btn"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? '✕' : '☰'}
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Horizontal Tabs Scrollbar (Hidden on Desktop) */}
+      <nav className="mobile-tab-bar" aria-label="Mobile Navigation Tabs">
+        {tabs.map((t) => {
+          const isSelected = activeTab === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => handleTabSelect(t.id)}
+              className={`mobile-tab-item ${isSelected ? 'active' : ''}`}
+            >
+              <span>{t.icon}</span>
+              <span>{t.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Desktop Sidebar & Mobile Slide-over Drawer */}
+      <aside className={`side ${mobileMenuOpen ? 'mobile-open' : ''}`} aria-label="Sidebar">
         {/* Brand & Area */}
-        <div>
-          <div className="brand-row">
-            <span className="brand-mark">GP</span>
-            <span>GreenPulse</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <div className="brand-row">
+              <span className="brand-mark">GP</span>
+              <span>GreenPulse</span>
+            </div>
+            <div className="side-label" style={{ marginTop: 6 }}>
+              {area}
+            </div>
           </div>
-          <div className="side-label" style={{ marginTop: 6 }}>
-            {area}
-          </div>
+          {mobileMenuOpen && (
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="btn btn-ghost"
+              style={{ color: '#fff', borderColor: '#334155', padding: '4px 10px', fontSize: 12 }}
+            >
+              ✕ Close
+            </button>
+          )}
         </div>
 
         {/* Site Picker (for M&E and EO) or Scope (for HQ) */}
@@ -40,7 +111,10 @@ export default function Shell({
                 id="active-site-select"
                 className="site-select"
                 value={siteId}
-                onChange={(e) => onSite && onSite(e.target.value)}
+                onChange={(e) => {
+                  if (onSite) onSite(e.target.value);
+                  setMobileMenuOpen(false);
+                }}
               >
                 {sites.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -70,7 +144,7 @@ export default function Shell({
                 <button
                   key={t.id}
                   id={`tab-${t.id}`}
-                  onClick={() => onTabChange && onTabChange(t.id)}
+                  onClick={() => handleTabSelect(t.id)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -120,6 +194,14 @@ export default function Shell({
           </button>
         </div>
       </aside>
+
+      {/* Backdrop for mobile drawer */}
+      {mobileMenuOpen && (
+        <div
+          className="mobile-drawer-backdrop"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
 
       {/* Main Focused Content View */}
       <main className="main">{children}</main>

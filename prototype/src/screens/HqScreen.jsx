@@ -324,47 +324,49 @@ The Main Contractor shall deploy a Containerized Battery Energy Storage System (
               </button>
             </div>
 
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-              <thead>
-                <tr style={{ textAlign: 'left', borderBottom: '1px solid #E2E8F0', color: '#64748B' }}>
-                  <th style={{ padding: '8px' }}>Project Site</th>
-                  <th style={{ padding: '8px' }}>Battery & Solar Setup</th>
-                  <th style={{ padding: '8px' }}>Diesel Saved</th>
-                  <th style={{ padding: '8px' }}>Generator Rental Saved</th>
-                  <th style={{ padding: '8px' }}>Monthly Net Savings</th>
-                  <th style={{ padding: '8px' }}>Carbon Cut</th>
-                  <th style={{ padding: '8px' }}>Payback</th>
-                </tr>
-              </thead>
-              <tbody>
-                {siteResults.map(({ site: s, m }) => (
-                  <tr key={s.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                    <td style={{ padding: '10px 8px', fontWeight: 600, color: '#0F172A' }}>
-                      {s.name}
-                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 400 }}>{s.contractor}</div>
-                    </td>
-                    <td style={{ padding: '10px 8px' }}>
-                      {s.bessKWh} kWh ({s.bessKW} kW) + {s.solarKWp} kWp Solar
-                    </td>
-                    <td style={{ padding: '10px 8px', fontWeight: 600 }}>
-                      {fmt(m.avoidedL, 2)} L
-                    </td>
-                    <td style={{ padding: '10px 8px' }}>
-                      RM {fmt(s.rentalAvoided || 5000, 2)}/mo
-                    </td>
-                    <td style={{ padding: '10px 8px', fontWeight: 700, color: '#0F766E' }}>
-                      RM {fmt(m.totalRM, 2)}/mo
-                    </td>
-                    <td style={{ padding: '10px 8px' }}>
-                      {fmt(m.co2t, 2)} tCO2e
-                    </td>
-                    <td style={{ padding: '10px 8px' }}>
-                      <span className="tag ok">{s.paybackMonths || 14} Months</span>
-                    </td>
+            <div className="table-responsive">
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                <thead>
+                  <tr style={{ textAlign: 'left', borderBottom: '1px solid #E2E8F0', color: '#64748B' }}>
+                    <th style={{ padding: '8px' }}>Project Site</th>
+                    <th style={{ padding: '8px' }}>Battery & Solar Setup</th>
+                    <th style={{ padding: '8px' }}>Diesel Saved</th>
+                    <th style={{ padding: '8px' }}>Generator Rental Saved</th>
+                    <th style={{ padding: '8px' }}>Monthly Net Savings</th>
+                    <th style={{ padding: '8px' }}>Carbon Cut</th>
+                    <th style={{ padding: '8px' }}>Payback</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {siteResults.map(({ site: s, m }) => (
+                    <tr key={s.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                      <td style={{ padding: '10px 8px', fontWeight: 600, color: '#0F172A' }}>
+                        {s.name}
+                        <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 400 }}>{s.contractor}</div>
+                      </td>
+                      <td style={{ padding: '10px 8px' }}>
+                        {s.bessKWh} kWh ({s.bessKW} kW) + {s.solarKWp} kWp Solar
+                      </td>
+                      <td style={{ padding: '10px 8px', fontWeight: 600 }}>
+                        {fmt(m.avoidedL, 2)} L
+                      </td>
+                      <td style={{ padding: '10px 8px' }}>
+                        RM {fmt(s.rentalAvoided || 5000, 2)}/mo
+                      </td>
+                      <td style={{ padding: '10px 8px', fontWeight: 700, color: '#0F766E' }}>
+                        RM {fmt(m.totalRM, 2)}/mo
+                      </td>
+                      <td style={{ padding: '10px 8px' }}>
+                        {fmt(m.co2t, 2)} tCO2e
+                      </td>
+                      <td style={{ padding: '10px 8px' }}>
+                        <span className="tag ok">{s.paybackMonths || 14} Months</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
 
           {/* BESS Fleet Asset Relocation Roadmap */}
@@ -374,88 +376,90 @@ The Main Contractor shall deploy a Containerized Battery Energy Storage System (
               When a site gets permanent TNB power, the battery container moves to the next project parcel.
             </p>
 
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-              <thead>
-                <tr style={{ textAlign: 'left', borderBottom: '1px solid #E2E8F0', color: '#64748B' }}>
-                  <th style={{ padding: '8px' }}>Battery Unit</th>
-                  <th style={{ padding: '8px' }}>Capacity</th>
-                  <th style={{ padding: '8px' }}>Current Project</th>
-                  <th style={{ padding: '8px' }}>TNB Energization Target</th>
-                  <th style={{ padding: '8px' }}>Next Planned Project</th>
-                  <th style={{ padding: '8px' }}>Transfer Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
-                  <td style={{ padding: '10px 8px', fontWeight: 700 }}>Unit BESS-01</td>
-                  <td style={{ padding: '10px 8px' }}>261 kWh / 200 kW</td>
-                  <td style={{ padding: '10px 8px' }}>Putra Heights Development</td>
-                  <td style={{ padding: '10px 8px' }}>Dec 2026 (Substation on-line)</td>
-                  <td style={{ padding: '10px 8px', fontWeight: 600 }}>{FLEET_NEXT.putra.next}</td>
-                  <td style={{ padding: '10px 8px' }}>
-                    {transfers.putra.includes('Approved') ? (
-                      <span className="tag ok">{transfers.putra}</span>
-                    ) : (
-                      <button
-                        onClick={() => handleApproveTransfer('putra')}
-                        style={{
-                          padding: '4px 8px',
-                          backgroundColor: '#0F766E',
-                          color: '#fff',
-                          borderRadius: 6,
-                          border: 'none',
-                          fontSize: '11px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Authorize Move
-                      </button>
-                    )}
-                  </td>
-                </tr>
+            <div className="table-responsive">
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                <thead>
+                  <tr style={{ textAlign: 'left', borderBottom: '1px solid #E2E8F0', color: '#64748B' }}>
+                    <th style={{ padding: '8px' }}>Battery Unit</th>
+                    <th style={{ padding: '8px' }}>Capacity</th>
+                    <th style={{ padding: '8px' }}>Current Project</th>
+                    <th style={{ padding: '8px' }}>TNB Energization Target</th>
+                    <th style={{ padding: '8px' }}>Next Planned Project</th>
+                    <th style={{ padding: '8px' }}>Transfer Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
+                    <td style={{ padding: '10px 8px', fontWeight: 700 }}>Unit BESS-01</td>
+                    <td style={{ padding: '10px 8px' }}>261 kWh / 200 kW</td>
+                    <td style={{ padding: '10px 8px' }}>Putra Heights Development</td>
+                    <td style={{ padding: '10px 8px' }}>Dec 2026 (Substation on-line)</td>
+                    <td style={{ padding: '10px 8px', fontWeight: 600 }}>{FLEET_NEXT.putra.next}</td>
+                    <td style={{ padding: '10px 8px' }}>
+                      {transfers.putra.includes('Approved') ? (
+                        <span className="tag ok">{transfers.putra}</span>
+                      ) : (
+                        <button
+                          onClick={() => handleApproveTransfer('putra')}
+                          style={{
+                            padding: '4px 8px',
+                            backgroundColor: '#0F766E',
+                            color: '#fff',
+                            borderRadius: 6,
+                            border: 'none',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Authorize Move
+                        </button>
+                      )}
+                    </td>
+                  </tr>
 
-                <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
-                  <td style={{ padding: '10px 8px', fontWeight: 700 }}>Unit BESS-02</td>
-                  <td style={{ padding: '10px 8px' }}>522 kWh / 400 kW</td>
-                  <td style={{ padding: '10px 8px' }}>Melati Development</td>
-                  <td style={{ padding: '10px 8px' }}>Aug 2027 (Compact sub on-line)</td>
-                  <td style={{ padding: '10px 8px', fontWeight: 600 }}>{FLEET_NEXT.melati.next}</td>
-                  <td style={{ padding: '10px 8px' }}>
-                    {transfers.melati.includes('Approved') ? (
-                      <span className="tag ok">{transfers.melati}</span>
-                    ) : (
-                      <button
-                        onClick={() => handleApproveTransfer('melati')}
-                        style={{
-                          padding: '4px 8px',
-                          backgroundColor: '#0F766E',
-                          color: '#fff',
-                          borderRadius: 6,
-                          border: 'none',
-                          fontSize: '11px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Authorize Move
-                      </button>
-                    )}
-                  </td>
-                </tr>
+                  <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
+                    <td style={{ padding: '10px 8px', fontWeight: 700 }}>Unit BESS-02</td>
+                    <td style={{ padding: '10px 8px' }}>522 kWh / 400 kW</td>
+                    <td style={{ padding: '10px 8px' }}>Melati Development</td>
+                    <td style={{ padding: '10px 8px' }}>Aug 2027 (Compact sub on-line)</td>
+                    <td style={{ padding: '10px 8px', fontWeight: 600 }}>{FLEET_NEXT.melati.next}</td>
+                    <td style={{ padding: '10px 8px' }}>
+                      {transfers.melati.includes('Approved') ? (
+                        <span className="tag ok">{transfers.melati}</span>
+                      ) : (
+                        <button
+                          onClick={() => handleApproveTransfer('melati')}
+                          style={{
+                            padding: '4px 8px',
+                            backgroundColor: '#0F766E',
+                            color: '#fff',
+                            borderRadius: 6,
+                            border: 'none',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Authorize Move
+                        </button>
+                      )}
+                    </td>
+                  </tr>
 
-                <tr>
-                  <td style={{ padding: '10px 8px', fontWeight: 700 }}>Unit BESS-03</td>
-                  <td style={{ padding: '10px 8px' }}>261 kWh / 260 kW</td>
-                  <td style={{ padding: '10px 8px' }}>Bandar Rimbayu CLQ</td>
-                  <td style={{ padding: '10px 8px' }}>Permanent Off-Grid Site</td>
-                  <td style={{ padding: '10px 8px', fontWeight: 600 }}>{FLEET_NEXT.rimbayu.next}</td>
-                  <td style={{ padding: '10px 8px' }}>
-                    <span className="tag">Permanent Station</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  <tr>
+                    <td style={{ padding: '10px 8px', fontWeight: 700 }}>Unit BESS-03</td>
+                    <td style={{ padding: '10px 8px' }}>261 kWh / 260 kW</td>
+                    <td style={{ padding: '10px 8px' }}>Bandar Rimbayu CLQ</td>
+                    <td style={{ padding: '10px 8px' }}>Permanent Off-Grid Site</td>
+                    <td style={{ padding: '10px 8px', fontWeight: 600 }}>{FLEET_NEXT.rimbayu.next}</td>
+                    <td style={{ padding: '10px 8px' }}>
+                      <span className="tag">Permanent Station</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </section>
         </div>
       )}
