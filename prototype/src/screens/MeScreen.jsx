@@ -11,7 +11,6 @@ const TABS = [
   { id: 'flow', label: 'Battery & Power Flow', icon: '⚡' },
   { id: 'equipment', label: 'Heavy Machinery & Circuits', icon: '🏗️' },
   { id: 'weather', label: 'Intelligent Power Planning', icon: '🧠' },
-  { id: 'clq', label: 'Worker CLQ Microgrid (Act 446)', icon: '🏠' },
 ];
 
 export default function MeScreen({ user, sites = SITES, onLogout }) {
@@ -384,6 +383,57 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
               <div className="foot">Full capital payback in {site.paybackMonths} months</div>
             </div>
           </section>
+
+          {/* Worker Quarters (CLQ) 24/7 Power & Living Dignity Status (Act 446) */}
+          <section className="card" style={{ borderLeft: '4px solid #0F766E', background: '#F8FAFC' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: '18px' }}>🏠</span>
+                <div>
+                  <span style={{ fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
+                    Worker Quarters (CLQ) Power & Living Dignity
+                  </span>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#047857', background: '#ECFDF5', border: '1px solid #A7F3D0', padding: '2px 8px', borderRadius: 4, marginLeft: 8 }}>
+                    Act 446 Compliant
+                  </span>
+                </div>
+              </div>
+              <button
+                id="run-clq-audit-btn"
+                className="btn btn-primary"
+                onClick={() => setDormAuditRan(!dormAuditRan)}
+                style={{ fontSize: '11px', padding: '5px 12px', width: 'auto', margin: 0 }}
+              >
+                {dormAuditRan ? '✓ Audit Log Active' : '📋 Run Statutory Act 446 Audit'}
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginTop: 8 }}>
+              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 6, padding: '10px 12px' }}>
+                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>24/7 Dorm Fan & Light Uptime</div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: '#059669', margin: '2px 0' }}>100% Active</div>
+                <div style={{ fontSize: '11px', color: '#047857' }}>Zero 02:00 AM blackouts; continuous dorm ventilation</div>
+              </div>
+
+              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 6, padding: '10px 12px' }}>
+                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>CLQ Ambient Heat Index</div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: '2px 0' }}>26.5°C</div>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>Workers' Minimum Standards of Housing (Act 446)</div>
+              </div>
+
+              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 6, padding: '10px 12px' }}>
+                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Hostel Circuit Priority</div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: '#2563EB', margin: '2px 0' }}>P0 Critical (Never Shed)</div>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>Continuous BESS buffer for fans and clean water pumps</div>
+              </div>
+            </div>
+
+            {dormAuditRan && (
+              <div style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 6, padding: '10px 12px', marginTop: 12, fontSize: '12px', color: '#166534' }}>
+                ✅ <strong>Act 446 Telemetry Verified:</strong> Continuous night power to worker dormitories confirmed. Zero night breaker trips logged in last 72 hours. Digital certificate compiled for Department of Labour (JTK) and CIDB inspection.
+              </div>
+            )}
+          </section>
         </div>
       )}
 
@@ -690,74 +740,6 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
         </div>
       )}
 
-      {/* TAB 4: WORKER CLQ MICROGRID VIEW (ACT 446) */}
-      {activeTab === 'clq' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <section className="grid g3">
-            <div className="card kpi hero">
-              <div className="label">24/7 Fan & Light Uptime</div>
-              <div className="value num" style={{ color: '#059669' }}>100%</div>
-              <div className="foot">Zero 02:00 AM blackouts; continuous dorm ventilation</div>
-            </div>
-            <div className="card kpi">
-              <div className="label">CLQ Ambient Heat Index</div>
-              <div className="value num">26.5°<small>C</small></div>
-              <div className="foot">Workers' Minimum Standards of Housing (Act 446)</div>
-            </div>
-            <div className="card kpi">
-              <div className="label">CLQ Diesel Displaced</div>
-              <div className="value num">4,500<small> L / mo</small></div>
-              <div className="foot num">Saves RM 23,265/mo vs running 25kVA hostel genset</div>
-            </div>
-          </section>
-
-          <section className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <div>
-                <h2 style={{ margin: 0 }}>Centralised Labour Quarters (CLQ) Off-Grid Living Dignity</h2>
-                <p className="sub" style={{ margin: '4px 0 0 0' }}>
-                  Directly solves the documented off-grid hostel living conditions at Bandar Rimbayu CLQ (100 to 300 workers).
-                </p>
-              </div>
-              <button
-                id="run-clq-audit-btn"
-                className="btn btn-primary"
-                onClick={() => setDormAuditRan(true)}
-                style={{ fontSize: '12px', padding: '6px 12px' }}
-              >
-                📋 Run Statutory Act 446 Audit
-              </button>
-            </div>
-
-            {dormAuditRan && (
-              <div style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 8, padding: 12, marginBottom: 12, fontSize: '13px', color: '#166534' }}>
-                ✅ <strong>Act 446 Telemetry Verified:</strong> 42 hostel fans pulling 4.2 kW continuously. Ambient dorm temperature stabilized at 26.5°C. Zero nighttime breaker trips logged in last 72 hours. Digital certificate compiled for Department of Labour (JTK) inspection.
-              </div>
-            )}
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12, marginTop: 12 }}>
-              <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 8, border: '1px solid #E2E8F0' }}>
-                <h3 style={{ fontSize: '14px', margin: '0 0 6px 0', color: '#0F172A' }}>🌬️ Continuous Night Ventilation</h3>
-                <p style={{ fontSize: '13px', color: '#475569', margin: 0, lineHeight: 1.4 }}>
-                  Conventional CLQs cut gensets at 02:00 AM to save fuel, leaving workers sweltering in 30°C humidity. GreenPulse BESS guarantees 100% night fan operation, ensuring deep sleep and cutting next-day site accidents.
-                </p>
-              </div>
-              <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 8, border: '1px solid #E2E8F0' }}>
-                <h3 style={{ fontSize: '14px', margin: '0 0 6px 0', color: '#0F172A' }}>🔥 Electrical Fire Prevention</h3>
-                <p style={{ fontSize: '13px', color: '#475569', margin: 0, lineHeight: 1.4 }}>
-                  Eliminates pirated extension cords and overloaded wiring in worker rooms. Monitored circuit breakers prevent overloads from phone charging and shared induction cookers.
-                </p>
-              </div>
-              <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 8, border: '1px solid #E2E8F0' }}>
-                <h3 style={{ fontSize: '14px', margin: '0 0 6px 0', color: '#0F172A' }}>📋 Statutory Act 446 Audit Ready</h3>
-                <p style={{ fontSize: '13px', color: '#475569', margin: 0, lineHeight: 1.4 }}>
-                  Logs temperature, clean water pump power, and lighting uptime for Department of Labour (JTK) and CIDB hostel inspections without manual paper logs.
-                </p>
-              </div>
-            </div>
-          </section>
-        </div>
-      )}
 
       {/* Connect Machine Circuit Modal */}
       {isAddEqModalOpen && (
