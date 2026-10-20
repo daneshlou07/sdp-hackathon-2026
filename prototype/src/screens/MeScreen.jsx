@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Shell from '../components/Shell';
 import { DayChart } from '../components/Charts';
 import { SITES } from '../data/sites';
-import { WEATHER, planTips, monthly, fmt, GENSET_KWH_PER_L, DIESEL_RM_PER_L, simulateDay } from '../data/model';
+import { WEATHER, planTips, monthly, fmt, GENSET_KWH_PER_L, DIESEL_RM_PER_L, simulateDay, simulateForecastDay } from '../data/model';
 import { getSolarCastForecast } from '../data/aiEngine';
 import { fetchLiveSiteWeather, getGoogleWeatherApiKey, setGoogleWeatherApiKey } from '../data/weatherService';
 import AiCopilotModal from '../components/AiCopilotModal';
@@ -22,7 +22,6 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
   const [googleKeyInput, setGoogleKeyInput] = useState('');
   const weather = 'storm';
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
-  const [simWeather, setSimWeather] = useState('storm');
   const [hour, setHour] = useState(11);
   const [smart, setSmart] = useState(true);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
@@ -91,23 +90,23 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
 
   const activeForecastDay = dailyForecastList[selectedDayIndex] || dailyForecastList[0];
 
-  // Dynamic simulation for the chosen weather mode
-  const activeSimDay = useMemo(() => {
-    return simulateDay(site, simWeather, smart);
-  }, [site, simWeather, smart]);
+  // Autonomous dispatch plan computed directly from the selected day's actual weather forecast
+  const activePlanDay = useMemo(() => {
+    return simulateForecastDay(site, activeForecastDay, smart);
+  }, [site, activeForecastDay, smart]);
 
   // Daily Savings calculation for the Intelligent Power Planning tab
   const dailySavings = useMemo(() => {
-    const baselineL = activeSimDay.loadKWh / GENSET_KWH_PER_L;
-    const avoidedL = Math.max(0, baselineL - activeSimDay.litres);
+    const baselineL = activePlanDay.loadKWh / GENSET_KWH_PER_L;
+    const avoidedL = Math.max(0, baselineL - activePlanDay.litres);
     const savedRM = avoidedL * DIESEL_RM_PER_L;
-    const cleanShare = Math.round(((activeSimDay.loadKWh - activeSimDay.gensetKWh) / Math.max(1, activeSimDay.loadKWh)) * 100);
+    const cleanShare = Math.round(((activePlanDay.loadKWh - activePlanDay.gensetKWh) / Math.max(1, activePlanDay.loadKWh)) * 100);
     return {
       avoidedL: Math.round(avoidedL),
       savedRM: Math.round(savedRM),
       cleanShare,
     };
-  }, [activeSimDay]);
+  }, [activePlanDay]);
 
   const day = smart ? dSmart : plain;
   const now = day.hours[hour];
@@ -451,69 +450,6 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
               </div>
             </div>
 
-            {/* 1-Click Weather Simulation */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: 8, padding: '10px 14px', marginBottom: 16, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '12px', fontWeight: 700, color: '#334155' }}>
-                Simulate Weather:
-              </span>
-              <div style={{ display: 'flex', gap: 8, flex: 1, flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  onClick={() => setSimWeather('sunny')}
-                  style={{
-                    flex: 1,
-                    minWidth: 120,
-                    padding: '6px 12px',
-                    borderRadius: 6,
-                    border: simWeather === 'sunny' ? '2px solid #D97706' : '1px solid #CBD5E1',
-                    background: simWeather === 'sunny' ? '#FEF3C7' : '#FFFFFF',
-                    color: simWeather === 'sunny' ? '#92400E' : '#334155',
-                    fontWeight: 700,
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ☀️ Sunny
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSimWeather('storm')}
-                  style={{
-                    flex: 1,
-                    minWidth: 120,
-                    padding: '6px 12px',
-                    borderRadius: 6,
-                    border: simWeather === 'storm' ? '2px solid #0F766E' : '1px solid #CBD5E1',
-                    background: simWeather === 'storm' ? '#CCFBF1' : '#FFFFFF',
-                    color: simWeather === 'storm' ? '#0F766E' : '#334155',
-                    fontWeight: 700,
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ⛈️ Afternoon Storm
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSimWeather('monsoon')}
-                  style={{
-                    flex: 1,
-                    minWidth: 120,
-                    padding: '6px 12px',
-                    borderRadius: 6,
-                    border: simWeather === 'monsoon' ? '2px solid #2563EB' : '1px solid #CBD5E1',
-                    background: simWeather === 'monsoon' ? '#DBEAFE' : '#FFFFFF',
-                    color: simWeather === 'monsoon' ? '#1E40AF' : '#334155',
-                    fontWeight: 700,
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  🌧️ Rainy All Day
-                </button>
-              </div>
-            </div>
-
             {/* Daily Savings & Generator Status (Compact 4-Card Row) */}
             <div style={{ marginBottom: 16 }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
@@ -554,7 +490,7 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
                 <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '12px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                     <span style={{ fontSize: '14px' }}>🟢</span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F766E' }}>Charge Now (Free Sun)</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F766E' }}>Charge on Solar</span>
                   </div>
                   <ul style={{ margin: 0, paddingLeft: 18, fontSize: '12px', color: '#334155', display: 'flex', flexDirection: 'column', gap: 5 }}>
                     <li>EV Forklifts (8.5 kW)</li>
@@ -564,17 +500,25 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
                   </ul>
                 </div>
 
-                {/* Column 2: Pause during Rain */}
+                {/* Column 2: Rain Protection / Pause */}
                 <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '12px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                    <span style={{ fontSize: '14px' }}>🔴</span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#DC2626' }}>Pause During Rain</span>
+                    <span style={{ fontSize: '14px' }}>{activeForecastDay.rainProbability >= 50 ? '🔴' : '☀️'}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: activeForecastDay.rainProbability >= 50 ? '#DC2626' : '#059669' }}>
+                      {activeForecastDay.rainProbability >= 50 ? `Pause during Rain (${activeForecastDay.stormStart || 13}:00 to ${activeForecastDay.stormEnd || 16}:30)` : 'No Rain Pause Needed'}
+                    </span>
                   </div>
-                  <ul style={{ margin: 0, paddingLeft: 18, fontSize: '12px', color: '#334155', display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    <li>Secondary spare battery banks</li>
-                    <li>Heavy workshop heaters</li>
-                    <li>Welding training benches</li>
-                  </ul>
+                  {activeForecastDay.rainProbability >= 50 ? (
+                    <ul style={{ margin: 0, paddingLeft: 18, fontSize: '12px', color: '#334155', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      <li>Secondary spare battery banks</li>
+                      <li>Heavy workshop heaters</li>
+                      <li>Welding training benches</li>
+                    </ul>
+                  ) : (
+                    <div style={{ fontSize: '12px', color: '#047857', padding: '4px 0', lineHeight: 1.4 }}>
+                      Low rain risk ({activeForecastDay.rainProbability}%). All secondary equipment safe to run all day on clean solar.
+                    </div>
+                  )}
                 </div>
 
                 {/* Column 3: Heavy Machinery */}
@@ -594,15 +538,15 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
             </div>
           </section>
 
-          {/* Interactive 24-Hour Power Chart */}
+          {/* Real 24-Hour Power Schedule from Actual Forecast */}
           <section className="card">
             <h2 style={{ margin: '0 0 12px 0', fontSize: '16px' }}>
-              24-Hour Power Schedule ({simWeather === 'sunny' ? 'Sunny' : simWeather === 'monsoon' ? 'Rainy Day' : 'Afternoon Storm'})
+              24-Hour Power Schedule ({activeForecastDay.dayLabel}: {activeForecastDay.conditionText})
             </h2>
             <DayChart
-              hours={activeSimDay.hours}
-              now={null}
-              stormWindow={simWeather === 'storm' ? { from: activeForecastDay.stormStart || 13, to: activeForecastDay.stormEnd || 16, label: `Rain (${activeForecastDay.stormStart || 13}:00 to ${activeForecastDay.stormEnd || 16}:30)` } : null}
+              hours={activePlanDay.hours}
+              now={selectedDayIndex === 0 ? now : null}
+              stormWindow={activeForecastDay.rainProbability >= 50 ? { from: activeForecastDay.stormStart || 13, to: activeForecastDay.stormEnd || 16, label: `Rain Forecast (${activeForecastDay.stormStart || 13}:00 to ${activeForecastDay.stormEnd || 16}:30)` } : null}
             />
           </section>
         </div>

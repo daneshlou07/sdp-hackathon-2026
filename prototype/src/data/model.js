@@ -31,7 +31,7 @@ export function loadAt(site, h, smart) {
 
 // one day, hour by hour. smart = follow GreenPulse plan (shift flexible loads into solar hours)
 export function simulateDay(site, weatherKey, smart = true) {
-  const w = WEATHER[weatherKey];
+  const w = WEATHER[weatherKey] || WEATHER.storm;
   let soc = site.soc0 * site.bessKWh;
   const hours = [];
   let gensetKWh = 0;
@@ -39,6 +39,69 @@ export function simulateDay(site, weatherKey, smart = true) {
   let loadKWh = 0;
   for (let h = 0; h < 24; h++) {
     const solar = site.solarKWp * solarShape(h) * w.factor(h);
+    const { total: load, parts } = loadAt(site, h, smart);
+    let net = solar - load;
+    let charge = 0;
+    let discharge = 0;
+    let genset = 0;
+    if (net >= 0) {
+      charge = Math.min(net, site.bessKW, site.bessKWh * 0.95 - soc);
+      soc += charge * 0.95;
+    } else {
+      const need = -net;
+      const avail = Math.max(0, soc - site.bessKWh * RESERVE);
+      discharge = Math.min(need, avail, site.bessKW);
+      soc -= discharge;
+      genset = need - discharge;
+    }
+    gensetKWh += genset;
+    solarKWh += solar;
+    loadKWh += load;
+    hours.push({ h, solar, load, parts, charge, discharge, genset, soc: soc / site.bessKWh });
+  }
+  return { hours, gensetKWh, solarKWh, loadKWh, litres: gensetKWh / GENSET_KWH_PER_L };
+}
+
+// Compute dynamic solar factor directly from real forecast weather metrics
+export function getSolarFactorForForecast(forecastDay) {
+  const rainProb = forecastDay?.rainProbability || 60;
+  const start = forecastDay?.stormStart || 13;
+  const end = forecastDay?.stormEnd || 16;
+  const cond = (forecastDay?.conditionText || '').toLowerCase();
+
+  return (h) => {
+    // Mostly clear or sunny day
+    if (rainProb < 35 || cond.includes('clear') || cond.includes('sunny')) {
+      return 1.0;
+    }
+    // Heavy monsoon or all-day overcast
+    if (rainProb >= 85 || cond.includes('monsoon') || cond.includes('continuous')) {
+      return 0.3;
+    }
+    // Convective afternoon tropical storm window
+    if (h >= start && h <= end) {
+      return Math.max(0.12, 1 - (rainProb / 100) * 0.88);
+    }
+    if (h === Math.floor(start) - 1 || h === Math.ceil(end) + 1) {
+      return 0.65;
+    }
+    return 1.0;
+  };
+}
+
+// Simulate site power directly using actual forecasted day data (no synthetic simulation mode)
+export function simulateForecastDay(site, forecastDay, smart = true) {
+  const factor = typeof forecastDay === 'string'
+    ? (WEATHER[forecastDay] ? WEATHER[forecastDay].factor : () => 1)
+    : getSolarFactorForForecast(forecastDay);
+
+  let soc = site.soc0 * site.bessKWh;
+  const hours = [];
+  let gensetKWh = 0;
+  let solarKWh = 0;
+  let loadKWh = 0;
+  for (let h = 0; h < 24; h++) {
+    const solar = site.solarKWp * solarShape(h) * factor(h);
     const { total: load, parts } = loadAt(site, h, smart);
     let net = solar - load;
     let charge = 0;
