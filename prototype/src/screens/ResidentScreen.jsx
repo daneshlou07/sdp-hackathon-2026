@@ -190,7 +190,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                 Report Noise Disturbance or Inquiry
               </h2>
               <p style={{ fontSize: '13px', color: '#64748B', margin: 0, lineHeight: 1.45 }}>
-                Noticed unusual machinery noise, dust, or vehicle speeding? Submit your feedback directly to the on-site Environmental Officer (Inta Bina / Sime Darby Property).
+                Noticed unusual machinery noise, dust, or vehicle speeding? Submit your feedback directly to the on-site Environmental Officer (Sime Darby Property).
               </p>
             </div>
 
@@ -411,7 +411,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                 lineHeight: 1.45,
               }}
             >
-              💡 <strong>Direct Resolution Policy:</strong> By resolving inquiries within minutes on-site, Sime Darby Property and Inta Bina prevent municipal stop-work notices and preserve good neighbour relations.
+              💡 <strong>Direct Resolution Policy:</strong> By resolving inquiries within minutes on-site, Sime Darby Property prevents municipal stop-work notices and preserves good neighbour relations.
             </div>
           </section>
         </div>

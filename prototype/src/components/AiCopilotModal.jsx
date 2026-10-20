@@ -304,7 +304,7 @@ export default function AiCopilotModal({ isOpen, onClose, role = 'me' }) {
           }}
         >
           <span>
-            Telemetry Source: <strong>Inta Bina Putra Heights 4G IoT Gateway</strong> | MET Malaysia Radar Feed
+            Telemetry Source: <strong>Putra Heights 4G IoT Gateway</strong> | MET Malaysia Radar Feed
           </span>
           <button
             onClick={onClose}

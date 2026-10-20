@@ -552,7 +552,7 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
                 <tr>
                   <td><b>Unit BESS-01</b></td>
                   <td>261 kWh / 200 kW</td>
-                  <td>Inta Bina Putra Heights</td>
+                  <td>Putra Heights Development</td>
                   <td>Month 14 of 24 (58%)</td>
                   <td>Dec 2026 (Substation energization)</td>
                   <td><b>{FLEET_NEXT.putra.next}</b> ({FLEET_NEXT.putra.move})</td>
@@ -581,7 +581,7 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
                 <tr>
                   <td><b>Unit BESS-02</b></td>
                   <td>522 kWh / 400 kW</td>
-                  <td>Inta Bina Melati</td>
+                  <td>Melati Development</td>
                   <td>Month 8 of 30 (27%)</td>
                   <td>Aug 2027 (Compact sub energization)</td>
                   <td><b>{FLEET_NEXT.melati.next}</b> ({FLEET_NEXT.melati.move})</td>
@@ -610,7 +610,7 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
                 <tr>
                   <td><b>Unit BESS-03</b></td>
                   <td>261 kWh / 260 kW</td>
-                  <td>Inta Bina Rimbayu CLQ</td>
+                  <td>Bandar Rimbayu CLQ</td>
                   <td>Proposed Deployment</td>
                   <td>No permanent TNB connection</td>
                   <td><b>{FLEET_NEXT.rimbayu.next}</b></td>

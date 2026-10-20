@@ -5,7 +5,7 @@ const WORK = [...range(8, 13), ...range(14, 18)];
 export const SITES = [
   {
     id: 'putra',
-    name: 'Inta Bina Putra Heights',
+    name: 'Putra Heights Development',
     short: 'Putra Heights',
     kind: 'Construction site',
     lat: 3.003,
@@ -34,7 +34,7 @@ export const SITES = [
   },
   {
     id: 'melati',
-    name: 'Inta Bina Melati',
+    name: 'Melati Development',
     short: 'Melati',
     kind: 'Construction site',
     lat: 3.226,
@@ -64,13 +64,13 @@ export const SITES = [
   },
   {
     id: 'rimbayu',
-    name: 'Inta Bina Rimbayu CLQ',
+    name: 'Bandar Rimbayu CLQ',
     short: 'Rimbayu CLQ',
     kind: 'Workers quarters (no TNB)',
     lat: 2.946,
     lon: 101.536,
     locationName: 'Bandar Rimbayu, Kuala Langat',
-    sourceNote: 'Inta Bina proposal: 4,500 L/month, 25 + 50 kVA gensets, 169.88 kWp, 261 kWh, RM 802,000',
+    sourceNote: 'CLQ proposal: 4,500 L/month, 25 + 50 kVA gensets, 169.88 kWp, 261 kWh, RM 802,000',
     bessKWh: 261,
     bessKW: 260,
     solarKWp: 169.88,

@@ -716,7 +716,7 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
               <div>
                 <h2 style={{ margin: 0 }}>Centralised Labour Quarters (CLQ) Off-Grid Living Dignity</h2>
                 <p className="sub" style={{ margin: '4px 0 0 0' }}>
-                  Directly solves the documented off-grid hostel living conditions at Inta Bina Rimbayu CLQ (100 to 300 workers).
+                  Directly solves the documented off-grid hostel living conditions at Bandar Rimbayu CLQ (100 to 300 workers).
                 </p>
               </div>
               <button

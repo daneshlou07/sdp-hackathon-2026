@@ -551,7 +551,7 @@ export default function EoScreen({
               <div>
                 <h2 style={{ margin: 0 }}>Digital Material Pass: 4-Stage Timber Formwork Circularity</h2>
                 <p className="sub" style={{ margin: '4px 0 0 0' }}>
-                  Directly implements the recycling protocol documented in Inta Bina internal ESG meeting records.
+                  Directly implements the recycling protocol documented in internal site ESG records.
                 </p>
               </div>
               <button
@@ -742,7 +742,7 @@ export default function EoScreen({
               <tbody>
                 <tr><td>Project Name</td><td><b>{site.name}</b></td></tr>
                 <tr><td>Location / Mukim</td><td>Putra Heights, Petaling, Selangor</td></tr>
-                <tr><td>Primary Main Contractor</td><td>Inta Bina Sdn Bhd</td></tr>
+                <tr><td>Primary Main Contractor</td><td>Sime Darby Construction</td></tr>
                 <tr><td>Site Temporary Power Configuration</td><td>GreenPulse Hybrid BESS ({site.bessKWh} kWh / {site.bessKW} kW) + {site.solarKWp} kWp Solar</td></tr>
                 <tr><td>Backup Diesel Generator State</td><td>Cold Standby (100% Locked Out)</td></tr>
               </tbody>
