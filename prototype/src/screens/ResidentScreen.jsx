@@ -90,7 +90,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
 
       {/* Main Content */}
       <main style={{ maxWidth: 960, margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-        {/* Live Boundary Noise & Clean Power Banner */}
+        {/* Live Boundary Noise & Work Status Banner */}
         <section
           style={{
             background: 'linear-gradient(135deg, #0F766E 0%, #115E59 100%)',
@@ -100,72 +100,121 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
             boxShadow: '0 10px 25px -5px rgba(15, 118, 110, 0.2)',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
-            <div>
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#CCFBF1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Live Sound Telemetry
-              </div>
-              <h1 style={{ fontSize: '24px', fontWeight: 800, margin: '6px 0' }}>
-                Putra Heights Site Boundary (Facing Damayan Residensi)
-              </h1>
-              <p style={{ margin: 0, fontSize: '14px', color: '#CCFBF1', maxWidth: 620, lineHeight: 1.5 }}>
-                This site is powered by clean solar and battery storage. Zero continuous diesel generator running next to your home.
-              </p>
+          {/* Banner Title */}
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: '#CCFBF1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Neighborhood Boundary Protection
             </div>
-
-            <div
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.15)',
-                backdropFilter: 'blur(8px)',
-                borderRadius: 12,
-                padding: '16px 22px',
-                textAlign: 'center',
-                minWidth: 190,
-                border: '1px solid rgba(255,255,255,0.25)',
-              }}
-            >
-              <div style={{ fontSize: '12px', fontWeight: 600, color: '#CCFBF1' }}>Live Boundary Noise</div>
-              <div style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.03em' }} className="num">
-                54.10 <span style={{ fontSize: '18px', fontWeight: 600 }}>dBA</span>
-              </div>
-              <div
-                style={{
-                  backgroundColor: '#059669',
-                  color: '#FFFFFF',
-                  fontSize: '11px',
-                  fontWeight: 800,
-                  padding: '3px 10px',
-                  borderRadius: 9999,
-                  marginTop: 4,
-                  display: 'inline-block',
-                }}
-              >
-                ✓ Safe (5.90 dBA below 60.00 dBA limit)
-              </div>
-            </div>
+            <h1 style={{ fontSize: '22px', fontWeight: 800, margin: '4px 0' }}>
+              Putra Heights Phase 2 (Facing Damayan Residensi)
+            </h1>
+            <p style={{ margin: 0, fontSize: '13px', color: '#CCFBF1', lineHeight: 1.4 }}>
+              Real-time noise and air quality monitoring directly outside your residential boundary.
+            </p>
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: 12,
-              marginTop: 20,
-              paddingTop: 16,
-              borderTop: '1px solid rgba(255,255,255,0.2)',
-            }}
-          >
-            <div>
-              <div style={{ fontSize: '11px', color: '#CCFBF1' }}>DOE Statutory Daytime Limit</div>
-              <div style={{ fontSize: '14px', fontWeight: 700 }} className="num">60.00 dBA (Schedule 6)</div>
+          {/* 2 Balanced Cards Inside Banner */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
+            {/* Card 1: Noise Level & Human Context */}
+            <div
+              style={{
+                backgroundColor: 'rgba(255,255,255,0.12)',
+                backdropFilter: 'blur(8px)',
+                borderRadius: 12,
+                padding: '16px 18px',
+                border: '1px solid rgba(255,255,255,0.2)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#CCFBF1' }}>Live Boundary Sound Level</span>
+                  <span
+                    style={{
+                      backgroundColor: '#059669',
+                      color: '#FFFFFF',
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      padding: '2px 8px',
+                      borderRadius: 999,
+                    }}
+                  >
+                    ✓ Normal & Safe
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, margin: '8px 0 6px' }}>
+                  <span style={{ fontSize: '38px', fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1 }} className="num">
+                    54.10
+                  </span>
+                  <span style={{ fontSize: '16px', fontWeight: 600, color: '#CCFBF1' }}>dBA</span>
+                  <span style={{ fontSize: '12px', color: '#A7F3D0', marginLeft: 'auto' }}>
+                    Limit: 60.00 dBA
+                  </span>
+                </div>
+
+                {/* Visual Decibel Bar */}
+                <div style={{ height: 6, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 99, overflow: 'hidden', margin: '8px 0 10px' }}>
+                  <div style={{ width: `${(54.1 / 60) * 100}%`, height: '100%', backgroundColor: '#34D399', borderRadius: 99 }} />
+                </div>
+              </div>
+
+              <div style={{ fontSize: '12px', color: '#CCFBF1', lineHeight: 1.4, borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 8 }}>
+                🔊 <strong>Sound Context:</strong> Similar to a quiet office or moderate rainfall. Well below old diesel generator sites (85+ dBA).
+              </div>
             </div>
-            <div>
-              <div style={{ fontSize: '11px', color: '#CCFBF1' }}>Site Power System</div>
-              <div style={{ fontSize: '14px', fontWeight: 700 }}>261 kWh Battery + 150 kWp Solar</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '11px', color: '#CCFBF1' }}>Backup Diesel Generator</div>
-              <div style={{ fontSize: '14px', fontWeight: 700 }}>100% OFF (Hardware Lockout)</div>
+
+            {/* Card 2: Permitted Work Hours Right Now & Clean Power Status */}
+            <div
+              style={{
+                backgroundColor: 'rgba(255,255,255,0.12)',
+                backdropFilter: 'blur(8px)',
+                borderRadius: 12,
+                padding: '16px 18px',
+                border: '1px solid rgba(255,255,255,0.2)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#CCFBF1' }}>Can They Work Right Now?</span>
+                  <span
+                    style={{
+                      backgroundColor: '#047857',
+                      color: '#ECFDF5',
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      padding: '2px 8px',
+                      borderRadius: 999,
+                      border: '1px solid #10B981',
+                    }}
+                  >
+                    🟢 Normal Work Permitted
+                  </span>
+                </div>
+
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF', marginBottom: 4 }}>
+                  Daytime Hours: 08:00 to 18:00
+                </div>
+                <div style={{ fontSize: '12px', color: '#CCFBF1', lineHeight: 1.4 }}>
+                  Heavy machinery and cranes are permitted under MBSA & DOE rules. All noisy operations must strictly end by 6:00 PM.
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 8, marginTop: 10, fontSize: '11px' }}>
+                <div>
+                  <span style={{ color: '#CCFBF1' }}>Diesel Generator:</span>
+                  <div style={{ fontWeight: 800, color: '#34D399' }}>100% Locked OFF</div>
+                </div>
+                <div>
+                  <span style={{ color: '#CCFBF1' }}>Air & Smoke:</span>
+                  <div style={{ fontWeight: 800, color: '#34D399' }}>Zero Fumes (Battery)</div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -185,7 +234,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
               Report Noise, Dust, or Disturbance
             </h2>
             <p style={{ fontSize: '13px', color: '#64748B', margin: 0, lineHeight: 1.5 }}>
-              Hear unusual machinery noise, dust, or bright floodlights? Submit your report directly to the on-site Environmental Officer.
+              Hearing unexpected banging after hours, smelling exhaust, or seeing mud? Send a direct alert to the on-site team.
             </p>
           </div>
 
@@ -202,9 +251,46 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                 lineHeight: 1.45,
               }}
             >
-              ✅ <strong>Feedback Received:</strong> Your report has been dispatched to the on-site Environmental Officer. An inspection has been triggered. Check the feedback dropdown below to see status.
+              ✅ <strong>Feedback Dispatched:</strong> Site Environmental Officer (Kak Nurul) has received your alert. A perimeter inspection is in progress. Check the feedback log below to see resolution status.
             </div>
           )}
+
+          {/* Quick Issue Preset Chips */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: 6 }}>
+              Quick Select Common Issues (Tap to auto-fill):
+            </label>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {[
+                { label: '🔊 Loud Rumbling Hum', cat: 'Low-Frequency Engine / Motor Hum', text: 'Persistent low-frequency humming vibration heard inside my unit.' },
+                { label: '🏗️ Late-Night Crane Noise', cat: 'Late-Night Crane / Hoist Movement', text: 'Crane or passenger hoist operating outside permitted daytime hours.' },
+                { label: '🚛 Speeding Trucks / Mud', cat: 'Access Road Lorries / Speeding', text: 'Construction lorries driving too fast or leaving mud on public road.' },
+                { label: '💡 Spotlight in Bedroom', cat: 'Bright Floodlight Glare into Bedrooms', text: 'High-intensity site floodlight pointed directly into my bedroom window.' },
+              ].map((chip) => (
+                <button
+                  key={chip.label}
+                  type="button"
+                  onClick={() => {
+                    setCategory(chip.cat);
+                    setIssue(chip.text);
+                  }}
+                  style={{
+                    backgroundColor: category === chip.cat ? '#FEF2F2' : '#F8FAFC',
+                    color: category === chip.cat ? '#991B1B' : '#334155',
+                    border: category === chip.cat ? '1px solid #FCA5A5' : '1px solid #E2E8F0',
+                    borderRadius: 999,
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Anonymous Guarantee Banner */}
@@ -327,6 +413,10 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
             >
               <span>📢</span> Send to Site Environmental Officer
             </button>
+
+            <div style={{ fontSize: '12px', color: '#64748B', textAlign: 'center' }}>
+              ⚡ Site Environmental Officer on duty: <strong>Kak Nurul</strong> (Average on-site investigation: under 20 minutes)
+            </div>
           </form>
         </section>
 
