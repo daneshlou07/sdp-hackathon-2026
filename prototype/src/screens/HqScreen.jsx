@@ -5,11 +5,9 @@ import { FLEET_NEXT } from '../data/sites';
 import { DIESEL_RM_PER_L, monthly, fmt } from '../data/model';
 
 const TABS = [
-  { id: 'savings', label: 'Executive P&L & Fuel Ticker', icon: '💰' },
-  { id: 'calculator', label: 'Pre-Tender Sizing Calculator', icon: '🧮' },
-  { id: 'bursa', label: 'Bursa Malaysia CSI Disclosure', icon: '📋' },
-  { id: 'portfolio', label: 'Multi-Site Portfolio Ledger', icon: '🗺️' },
-  { id: 'roadmap', label: '10-Yr Township Fleet Roadmap', icon: '🚚' },
+  { id: 'savings', label: 'Group Savings & P&L', icon: '💰' },
+  { id: 'portfolio', label: 'Site Portfolio & Assets', icon: '🗺️' },
+  { id: 'calculator', label: 'Pre-Tender Calculator', icon: '🧮' },
 ];
 
 export default function HqScreen({ user, sites = [], onAddSite, onLogout }) {
@@ -76,13 +74,13 @@ export default function HqScreen({ user, sites = [], onAddSite, onLogout }) {
   ];
 
   const pills = [
-    { k: 'Portfolio Savings', v: `RM ${fmt(totals.totalRM)}/mo`, tone: 'ok' },
+    { k: 'Portfolio Savings', v: `RM ${fmt(totals.totalRM, 2)}/mo`, tone: 'ok' },
     { k: 'Active Parcels', v: `${sites.length} Sites`, tone: 'ok' },
-    { k: 'Diesel Eliminated', v: `${fmt(totals.avoidedL)} L`, tone: 'ok' },
+    { k: 'Diesel Eliminated', v: `${fmt(totals.avoidedL, 2)} L`, tone: 'ok' },
     { k: 'Commercial Diesel', v: `RM ${dieselPrice.toFixed(2)}/L` },
   ];
 
-  // Pre-Tender Sizing Formula
+  // Pre-Tender Sizing Calculation
   const estMonthlyFuelL = calcCranes * 7000 + calcHoists * 2500;
   const estMonthlyFuelRM = estMonthlyFuelL * dieselPrice;
   const estAvoidedRentalRM = calcCranes * 15000;
@@ -91,9 +89,9 @@ export default function HqScreen({ user, sites = [], onAddSite, onLogout }) {
   const recSolarKwp = calcCranes > 1 ? '300 kWp' : '150 kWp';
   const recPaybackMonths = (350000 / (estMonthlyFuelRM + estAvoidedRentalRM - 18000)).toFixed(1);
 
-  const tenderClauseText = `SIME DARBY PROPERTY MANDATORY GREEN TENDER CLAUSE:
-Clause 14.8 (Zero-Genset Site Energy Operating System):
-The Main Contractor shall deploy an approved Containerized Battery Energy Storage System (minimum ${recBessSize}) paired with temporary rooftop solar PV (minimum ${recSolarKwp}) to supply primary construction machinery power. The use of continuous prime diesel generators is strictly prohibited under the Township Environmental Noise Management Standard (DOE Schedule 6). The Contractor shall integrate telemetry into Sime Darby Property's GreenPulse SiteOS.`;
+  const tenderClauseText = `SIME DARBY PROPERTY GREEN TENDER SPECIFICATION:
+Clause 14.8 (Clean Site Power Mandate):
+The Main Contractor shall deploy a Containerized Battery Energy Storage System (minimum ${recBessSize}) with rooftop solar PV (minimum ${recSolarKwp}) for primary site machinery. Continuous diesel generator operation is prohibited under DOE Schedule 6. Telemetry shall connect to Sime Darby Property's GreenPulse system.`;
 
   const handleCopyClause = () => {
     navigator.clipboard?.writeText(tenderClauseText);
@@ -137,7 +135,7 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
   const handleApproveTransfer = (siteKey) => {
     setTransfers((prev) => ({
       ...prev,
-      [siteKey]: `✓ Logistics Order Approved (${new Date().toLocaleDateString('en-MY')})`,
+      [siteKey]: `✓ Logistics Approved (${new Date().toLocaleDateString('en-MY')})`,
     }));
   };
 
@@ -156,12 +154,12 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
       {/* Top Header */}
       <div className="top">
         <div>
-          <h1>Sime Darby Property: Group Executive Command</h1>
+          <h1>HQ Executive Dashboard</h1>
           <p>
-            Consolidated Site Power Economics, Pre-Tender Sizing, and 10-Year Master Township Fleet Governance
+            Group cost savings, active site performance, and project energy planning
           </p>
         </div>
-        <div className="top-meta" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div className="top-meta" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <button
             onClick={() => setShowAddSiteModal(true)}
             style={{
@@ -176,10 +174,9 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
             }}
           >
-            <span>+</span> Commission New Township Site
+            <span>+</span> Add New Project
           </button>
           <div className="price-input card" style={{ padding: '4px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 12, fontWeight: 600 }}>Commercial Diesel:</span>
@@ -192,109 +189,289 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
               max="10.00"
               value={dieselPrice}
               onChange={(e) => setDieselPrice(parseFloat(e.target.value) || 0)}
-              style={{ width: 70, padding: '3px 6px', borderRadius: 4, border: '1px solid var(--line)', fontWeight: 600, fontSize: 12 }}
+              style={{ width: 65, padding: '3px 6px', borderRadius: 4, border: '1px solid var(--line)', fontWeight: 600, fontSize: 12 }}
             />
             <span style={{ fontSize: 11, color: 'var(--muted)' }}>/ L</span>
           </div>
         </div>
       </div>
 
-      {/* TAB 1: EXECUTIVE P&L & SAVINGS */}
+      {/* TAB 1: GROUP SAVINGS & P&L */}
       {activeTab === 'savings' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div id="ticker" className="card" style={{ background: '#fffbeb', borderColor: '#fde68a' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 20 }}>⛽</span>
-                <div>
-                  <b style={{ color: '#92400e' }}>
-                    Gazetted Malaysian Commercial Fuel Price (15 – 21 Oct 2026): Euro 5 = RM 5.17 / L | B7 = RM 5.37 / L
-                  </b>
-                  <p style={{ margin: 0, fontSize: 12, color: '#b45309' }}>
-                    Commercial construction is 100% excluded from BUDI Madani subsidies. Savings are calculated at verified market commercial price.
-                  </p>
-                </div>
-              </div>
-              <span className="tag near" style={{ background: '#fef3c7', color: '#92400e' }}>
-                Un-subsidised Commercial Market
-              </span>
-            </div>
-          </div>
-
+          {/* Executive KPI Summary */}
           <section className="grid g4">
             <div className="card kpi hero">
-              <div className="label">Total Net Cash Saved (MTD)</div>
-              <div className="value num" style={{ color: '#0F766E' }}>RM {fmt(totals.totalRM)}</div>
-              <div className="foot num">RM {fmt(totals.fuelRM)} fuel + RM {fmt(totals.rentalAvoided)} rental avoided</div>
+              <div className="label">Monthly Cash Saved</div>
+              <div className="value num" style={{ color: '#0F766E' }}>
+                RM {fmt(totals.totalRM, 2)}
+              </div>
+              <div className="foot num">RM {fmt(totals.fuelRM, 2)} fuel + RM {fmt(totals.rentalAvoided, 2)} generator rentals avoided</div>
             </div>
+
             <div className="card kpi">
-              <div className="label">Total Diesel Eliminated</div>
-              <div className="value num">{fmt(totals.avoidedL)}<small> L</small></div>
-              <div className="foot num">Across {sites.length} active construction parcels</div>
+              <div className="label">Diesel Eliminated</div>
+              <div className="value num">
+                {fmt(totals.avoidedL, 2)}<small> L / mo</small>
+              </div>
+              <div className="foot num">Across {sites.length} active construction sites</div>
             </div>
+
             <div className="card kpi">
-              <div className="label">Bursa Scope 1 GHG Avoided</div>
-              <div className="value num">{fmt(totals.co2t, 1)}<small> tCO2e</small></div>
-              <div className="foot num">2.68 kg CO2e / Litre diesel abated</div>
+              <div className="label">Carbon Abated (Scope 1)</div>
+              <div className="value num">
+                {fmt(totals.co2t, 2)}<small> tCO2e / mo</small>
+              </div>
+              <div className="foot num">Direct generator exhaust eliminated</div>
             </div>
+
             <div className="card kpi">
-              <div className="label">Equivalent Trees Planted</div>
-              <div className="value num">{fmt(treesPlanted)}<small> Trees</small></div>
-              <div className="foot">Matching Forestry ESG conversion</div>
+              <div className="label">Average Site Payback</div>
+              <div className="value num" style={{ color: '#0F766E' }}>
+                14<small> Months</small>
+              </div>
+              <div className="foot num">Full capital equipment payback</div>
             </div>
           </section>
 
+          {/* 6-Month Cost Comparison Graph */}
           <section className="card">
-            <h2>6-Month Temporary Power OpEx Comparison (RM)</h2>
-            <p className="sub">Grey: Old Diesel Generator Rental + Fuel Bill. Green: Clean BESS + Solar OpEx.</p>
+            <h2 style={{ fontSize: '16px', margin: '0 0 4px 0' }}>Monthly Power Costs: Generator vs Solar + Battery</h2>
+            <p className="sub" style={{ margin: '0 0 12px 0', fontSize: '12px' }}>
+              Comparing old rental diesel generator expenses against clean solar and battery operating costs.
+            </p>
             <Bars rows={chartRows} height={210} />
             <div className="legend" style={{ marginTop: 10 }}>
-              <span><i style={{ background: '#94a3b8' }} />Old Diesel Generator Rental + Fuel Invoices</span>
-              <span><i style={{ background: 'var(--green)' }} />GreenPulse Clean Solar + BESS Inverter OpEx</span>
+              <span><i style={{ background: '#94a3b8' }} />Old Generator Fuel & Rental Invoices</span>
+              <span><i style={{ background: 'var(--green)' }} />Clean Solar + Battery Operating Cost</span>
             </div>
           </section>
 
-          <section className="card" style={{ borderLeft: '4px solid #0F766E' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-              <span style={{ backgroundColor: '#0F766E', color: '#fff', fontSize: '11px', fontWeight: 800, padding: '2px 6px', borderRadius: 4 }}>
-                MACRO AI SENSITIVITY
-              </span>
-              <span style={{ fontSize: '12px', color: '#0F766E', fontWeight: 700 }}>
-                Live Model: RM {dieselPrice.toFixed(2)} / L
-              </span>
+          {/* Diesel Price Sensitivity & Bursa ESG Box */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 14 }}>
+            <div className="card" style={{ borderLeft: '4px solid #0F766E' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
+                  Commercial Diesel Price Impact
+                </span>
+                <span style={{ fontSize: '12px', color: '#0F766E', fontWeight: 700 }}>
+                  Current: RM {dieselPrice.toFixed(2)} / L
+                </span>
+              </div>
+              <p style={{ fontSize: '12px', color: '#64748B', margin: '0 0 10px 0' }}>
+                Commercial construction has no fuel subsidies. Solar and battery power locks in zero fuel cost regardless of market diesel price hikes.
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, background: '#F8FAFC', padding: 10, borderRadius: 6, border: '1px solid #E2E8F0' }}>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#64748B' }}>At Current RM {dieselPrice.toFixed(2)}/L:</span>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>RM {fmt(totals.totalRM, 2)}/mo</div>
+                  <div style={{ fontSize: '11px', color: '#0F766E' }}>Payback in 14 Months</div>
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#64748B' }}>If Diesel Hits RM 6.00/L:</span>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#059669' }}>
+                    RM {fmt(totals.avoidedL * 6.0 + totals.rentalAvoided, 2)}/mo
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#059669' }}>Payback in 12 Months</div>
+                </div>
+              </div>
             </div>
-            <h2 style={{ fontSize: '15px', margin: '4px 0 6px 0' }}>Diesel Subsidy Volatility Hedge</h2>
-            <p style={{ fontSize: '13px', color: '#475569', margin: '0 0 10px 0' }}>
-              GreenPulse completely insulates Sime Darby Property and Tier-1 contractors from national diesel price spikes, converting volatile operational fuel burn into a fixed, reusable capital asset.
+
+            <div className="card" style={{ borderLeft: '4px solid #2563EB' }}>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A', display: 'block', marginBottom: 6 }}>
+                Bursa Malaysia Annual Report Data (Scope 1)
+              </span>
+              <p style={{ fontSize: '12px', color: '#64748B', margin: '0 0 10px 0' }}>
+                Verified metrics ready to copy into the Sime Darby Property Annual Integrated Report.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: 4 }}>
+                  <span>Direct Scope 1 Emission Reduction</span>
+                  <b style={{ color: '#059669' }}>-77.6% Cut</b>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: 4 }}>
+                  <span>Construction Carbon Intensity</span>
+                  <b style={{ color: '#059669' }}>4.12 kg CO2e / m2 (vs 18.40 baseline)</b>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Green Certification Compliance</span>
+                  <b>GBI Gold & CIDB MyCREST Verified</b>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: SITE PORTFOLIO & ASSET DEPLOYMENT */}
+      {activeTab === 'portfolio' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Sites Performance Table */}
+          <section className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '16px' }}>Active Projects & Cost Savings</h2>
+                <p className="sub" style={{ margin: '2px 0 0 0', fontSize: '12px' }}>
+                  Financial and fuel performance across {sites.length} Sime Darby Property construction parcels.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAddSiteModal(true)}
+                className="btn btn-primary"
+                style={{ fontSize: '12px', padding: '6px 12px' }}
+              >
+                + Add New Project
+              </button>
+            </div>
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+              <thead>
+                <tr style={{ textAlign: 'left', borderBottom: '1px solid #E2E8F0', color: '#64748B' }}>
+                  <th style={{ padding: '8px' }}>Project Site</th>
+                  <th style={{ padding: '8px' }}>Battery & Solar Setup</th>
+                  <th style={{ padding: '8px' }}>Diesel Saved</th>
+                  <th style={{ padding: '8px' }}>Generator Rental Saved</th>
+                  <th style={{ padding: '8px' }}>Monthly Net Savings</th>
+                  <th style={{ padding: '8px' }}>Carbon Cut</th>
+                  <th style={{ padding: '8px' }}>Payback</th>
+                </tr>
+              </thead>
+              <tbody>
+                {siteResults.map(({ site: s, m }) => (
+                  <tr key={s.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                    <td style={{ padding: '10px 8px', fontWeight: 600, color: '#0F172A' }}>
+                      {s.name}
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 400 }}>{s.contractor}</div>
+                    </td>
+                    <td style={{ padding: '10px 8px' }}>
+                      {s.bessKWh} kWh ({s.bessKW} kW) + {s.solarKWp} kWp Solar
+                    </td>
+                    <td style={{ padding: '10px 8px', fontWeight: 600 }}>
+                      {fmt(m.avoidedL, 2)} L
+                    </td>
+                    <td style={{ padding: '10px 8px' }}>
+                      RM {fmt(s.rentalAvoided || 5000, 2)}/mo
+                    </td>
+                    <td style={{ padding: '10px 8px', fontWeight: 700, color: '#0F766E' }}>
+                      RM {fmt(m.totalRM, 2)}/mo
+                    </td>
+                    <td style={{ padding: '10px 8px' }}>
+                      {fmt(m.co2t, 2)} tCO2e
+                    </td>
+                    <td style={{ padding: '10px 8px' }}>
+                      <span className="tag ok">{s.paybackMonths || 14} Months</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+
+          {/* BESS Fleet Asset Relocation Roadmap */}
+          <section className="card">
+            <h2 style={{ fontSize: '16px', margin: '0 0 4px 0' }}>Battery Redeployment Schedule</h2>
+            <p className="sub" style={{ margin: '0 0 12px 0', fontSize: '12px' }}>
+              When a site gets permanent TNB power, the battery container moves to the next project parcel.
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, background: '#F8FAFC', padding: 10, borderRadius: 8, border: '1px solid #E2E8F0' }}>
-              <div>
-                <span style={{ fontSize: '11px', color: '#64748B' }}>Baseline Rate (RM 5.17/L):</span>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A' }}>RM 125,128 / month saved</div>
-                <div style={{ fontSize: '11px', color: '#0F766E' }}>Full Payback in 14.2 Months</div>
-              </div>
-              <div>
-                <span style={{ fontSize: '11px', color: '#64748B' }}>Escalated Risk (RM 5.80/L):</span>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: '#059669' }}>RM 136,720 / month saved</div>
-                <div style={{ fontSize: '11px', color: '#059669' }}>Accelerated Payback in 12.8 Months</div>
-              </div>
-            </div>
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+              <thead>
+                <tr style={{ textAlign: 'left', borderBottom: '1px solid #E2E8F0', color: '#64748B' }}>
+                  <th style={{ padding: '8px' }}>Battery Unit</th>
+                  <th style={{ padding: '8px' }}>Capacity</th>
+                  <th style={{ padding: '8px' }}>Current Project</th>
+                  <th style={{ padding: '8px' }}>TNB Energization Target</th>
+                  <th style={{ padding: '8px' }}>Next Planned Project</th>
+                  <th style={{ padding: '8px' }}>Transfer Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
+                  <td style={{ padding: '10px 8px', fontWeight: 700 }}>Unit BESS-01</td>
+                  <td style={{ padding: '10px 8px' }}>261 kWh / 200 kW</td>
+                  <td style={{ padding: '10px 8px' }}>Putra Heights Development</td>
+                  <td style={{ padding: '10px 8px' }}>Dec 2026 (Substation on-line)</td>
+                  <td style={{ padding: '10px 8px', fontWeight: 600 }}>{FLEET_NEXT.putra.next}</td>
+                  <td style={{ padding: '10px 8px' }}>
+                    {transfers.putra.includes('Approved') ? (
+                      <span className="tag ok">{transfers.putra}</span>
+                    ) : (
+                      <button
+                        onClick={() => handleApproveTransfer('putra')}
+                        style={{
+                          padding: '4px 8px',
+                          backgroundColor: '#0F766E',
+                          color: '#fff',
+                          borderRadius: 6,
+                          border: 'none',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Authorize Move
+                      </button>
+                    )}
+                  </td>
+                </tr>
+
+                <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
+                  <td style={{ padding: '10px 8px', fontWeight: 700 }}>Unit BESS-02</td>
+                  <td style={{ padding: '10px 8px' }}>522 kWh / 400 kW</td>
+                  <td style={{ padding: '10px 8px' }}>Melati Development</td>
+                  <td style={{ padding: '10px 8px' }}>Aug 2027 (Compact sub on-line)</td>
+                  <td style={{ padding: '10px 8px', fontWeight: 600 }}>{FLEET_NEXT.melati.next}</td>
+                  <td style={{ padding: '10px 8px' }}>
+                    {transfers.melati.includes('Approved') ? (
+                      <span className="tag ok">{transfers.melati}</span>
+                    ) : (
+                      <button
+                        onClick={() => handleApproveTransfer('melati')}
+                        style={{
+                          padding: '4px 8px',
+                          backgroundColor: '#0F766E',
+                          color: '#fff',
+                          borderRadius: 6,
+                          border: 'none',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Authorize Move
+                      </button>
+                    )}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style={{ padding: '10px 8px', fontWeight: 700 }}>Unit BESS-03</td>
+                  <td style={{ padding: '10px 8px' }}>261 kWh / 260 kW</td>
+                  <td style={{ padding: '10px 8px' }}>Bandar Rimbayu CLQ</td>
+                  <td style={{ padding: '10px 8px' }}>Permanent Off-Grid Site</td>
+                  <td style={{ padding: '10px 8px', fontWeight: 600 }}>{FLEET_NEXT.rimbayu.next}</td>
+                  <td style={{ padding: '10px 8px' }}>
+                    <span className="tag">Permanent Station</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </section>
         </div>
       )}
 
-      {/* TAB 2: PRE-TENDER SIZING CALCULATOR */}
+      {/* TAB 3: PRE-TENDER PROJECT CALCULATOR */}
       {activeTab === 'calculator' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <section className="card" style={{ borderLeft: '4px solid #D71920' }}>
-            <h2 style={{ fontSize: '16px', margin: '0 0 4px 0' }}>Pre-Tender BESS Sizing & Contractor Specification Engine</h2>
-            <p className="sub" style={{ marginBottom: 14 }}>
-              Used by Sime Darby Property Project Directors before issuing main contractor tender packages to determine optimal clean energy storage capacity and green procurement clauses.
+            <h2 style={{ fontSize: '16px', margin: '0 0 4px 0' }}>Pre-Tender Project Sizing</h2>
+            <p className="sub" style={{ margin: '0 0 14px 0', fontSize: '12px' }}>
+              Estimate battery size and cost savings before issuing contractor tender packages.
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 16 }}>
               <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 8, border: '1px solid #E2E8F0' }}>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>Number of Tower Cranes</label>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>Tower Cranes</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
                   <input
                     type="range"
@@ -304,12 +481,12 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
                     onChange={(e) => setCalcCranes(Number(e.target.value))}
                     style={{ flex: 1 }}
                   />
-                  <b className="num" style={{ fontSize: '16px', color: '#0F172A', minWidth: 30 }}>{calcCranes} TC</b>
+                  <b className="num" style={{ fontSize: '15px', color: '#0F172A', minWidth: 40 }}>{calcCranes} Cranes</b>
                 </div>
               </div>
 
               <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 8, border: '1px solid #E2E8F0' }}>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>Number of Passenger Hoists</label>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>Passenger Hoists</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
                   <input
                     type="range"
@@ -319,7 +496,7 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
                     onChange={(e) => setCalcHoists(Number(e.target.value))}
                     style={{ flex: 1 }}
                   />
-                  <b className="num" style={{ fontSize: '16px', color: '#0F172A', minWidth: 30 }}>{calcHoists} PH</b>
+                  <b className="num" style={{ fontSize: '15px', color: '#0F172A', minWidth: 40 }}>{calcHoists} Hoists</b>
                 </div>
               </div>
 
@@ -334,7 +511,7 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
                     onChange={(e) => setCalcFloors(Number(e.target.value))}
                     style={{ flex: 1 }}
                   />
-                  <b className="num" style={{ fontSize: '16px', color: '#0F172A', minWidth: 30 }}>{calcFloors} Flr</b>
+                  <b className="num" style={{ fontSize: '15px', color: '#0F172A', minWidth: 40 }}>{calcFloors} Floors</b>
                 </div>
               </div>
 
@@ -349,7 +526,7 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
                     onChange={(e) => setCalcDuration(Number(e.target.value))}
                     style={{ flex: 1 }}
                   />
-                  <b className="num" style={{ fontSize: '16px', color: '#0F172A', minWidth: 30 }}>{calcDuration} Mos</b>
+                  <b className="num" style={{ fontSize: '15px', color: '#0F172A', minWidth: 40 }}>{calcDuration} Months</b>
                 </div>
               </div>
             </div>
@@ -357,27 +534,33 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
             {/* Calculated Output Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginBottom: 14 }}>
               <div style={{ background: '#F0FDF4', padding: '10px 14px', borderRadius: 8, border: '1px solid #BBF7D0' }}>
-                <div style={{ fontSize: '11px', color: '#166534', fontWeight: 600 }}>Recommended Hardware Setup</div>
+                <div style={{ fontSize: '11px', color: '#166534', fontWeight: 600 }}>Recommended Setup</div>
                 <div style={{ fontSize: '15px', fontWeight: 800, color: '#166534', marginTop: 2 }}>{recBessSize}</div>
-                <div style={{ fontSize: '11px', color: '#15803D' }}>+ {recSolarKwp} Temporary Rooftop Solar</div>
+                <div style={{ fontSize: '11px', color: '#15803D' }}>+ {recSolarKwp} Rooftop Solar</div>
               </div>
+
               <div style={{ background: '#EFF6FF', padding: '10px 14px', borderRadius: 8, border: '1px solid #BFDBFE' }}>
-                <div style={{ fontSize: '11px', color: '#1E40AF', fontWeight: 600 }}>Estimated Total Fuel Saved</div>
-                <div style={{ fontSize: '15px', fontWeight: 800, color: '#1E40AF', marginTop: 2 }} className="num">{fmt(estMonthlyFuelL * calcDuration)} Litres</div>
-                <div style={{ fontSize: '11px', color: '#2563EB' }}>RM {fmt(estMonthlyFuelRM * calcDuration)} fuel budget</div>
+                <div style={{ fontSize: '11px', color: '#1E40AF', fontWeight: 600 }}>Estimated Diesel Eliminated</div>
+                <div style={{ fontSize: '15px', fontWeight: 800, color: '#1E40AF', marginTop: 2 }} className="num">
+                  {fmt(estMonthlyFuelL * calcDuration, 2)} Litres
+                </div>
+                <div style={{ fontSize: '11px', color: '#2563EB' }}>RM {fmt(estMonthlyFuelRM * calcDuration, 2)} fuel budget</div>
               </div>
+
               <div style={{ background: '#FEF2F2', padding: '10px 14px', borderRadius: 8, border: '1px solid #FECACA' }}>
-                <div style={{ fontSize: '11px', color: '#991B1B', fontWeight: 600 }}>Contractor Project OpEx Savings</div>
-                <div style={{ fontSize: '15px', fontWeight: 800, color: '#991B1B', marginTop: 2 }} className="num">RM {fmt(estTotalSavingsRM)}</div>
+                <div style={{ fontSize: '11px', color: '#991B1B', fontWeight: 600 }}>Total Estimated Savings</div>
+                <div style={{ fontSize: '15px', fontWeight: 800, color: '#991B1B', marginTop: 2 }} className="num">
+                  RM {fmt(estTotalSavingsRM, 2)}
+                </div>
                 <div style={{ fontSize: '11px', color: '#B91C1C' }}>Capital Payback: {recPaybackMonths} Months</div>
               </div>
             </div>
 
             {/* Tender Clause Box */}
             <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 8, border: '1px solid #CBD5E1' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, flexWrap: 'wrap', gap: 8 }}>
                 <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>
-                  Official Green Procurement Tender Specification Clause:
+                  Contractor Tender Clause (Copy and paste into tender documents):
                 </span>
                 <button
                   onClick={handleCopyClause}
@@ -387,12 +570,12 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
                     color: '#fff',
                     borderRadius: 6,
                     border: 'none',
-                    fontSize: '12px',
+                    fontSize: '11px',
                     fontWeight: 600,
                     cursor: 'pointer',
                   }}
                 >
-                  {copiedClause ? '✓ Copied to Clipboard!' : '📋 Copy Clause for Tender'}
+                  {copiedClause ? '✓ Copied to Clipboard!' : '📋 Copy Tender Clause'}
                 </button>
               </div>
               <pre
@@ -415,210 +598,16 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
         </div>
       )}
 
-      {/* TAB 3: BURSA MALAYSIA CSI DISCLOSURE */}
-      {activeTab === 'bursa' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <section className="card">
-            <h2>Bursa Malaysia Sustainability Reporting Guide (3rd Edition)</h2>
-            <p className="sub">
-              Construction Sustainability Index (CSI) Framework: Verified Construction Floor Area Carbon Intensity
-            </p>
-            <table>
-              <tbody>
-                <tr>
-                  <td>Mandatory Disclosure Metric</td>
-                  <td><b>Construction Floor Area (CFA) Carbon Intensity</b></td>
-                </tr>
-                <tr>
-                  <td>Conventional 500 kVA Diesel Genset Baseline</td>
-                  <td className="num">18.40 kg CO2e / m² CFA</td>
-                </tr>
-                <tr>
-                  <td>GreenPulse Electrified Site Performance</td>
-                  <td className="num" style={{ color: '#059669', fontSize: 16 }}><b>4.12 kg CO2e / m² CFA</b></td>
-                </tr>
-                <tr>
-                  <td>Scope 1 Carbon Intensity Decarbonization</td>
-                  <td><span className="tag ok">−77.6% Emission Abatement</span></td>
-                </tr>
-                <tr>
-                  <td>Independent Verification Standards</td>
-                  <td>Green Building Index (GBI) & CIDB MyCREST Tier 1 Gold</td>
-                </tr>
-                <tr>
-                  <td>Audit Trail Verification</td>
-                  <td>100% Telemetry Verified via 4G Industrial IoT Gateway (15-min intervals)</td>
-                </tr>
-              </tbody>
-            </table>
-            <p className="note" style={{ marginTop: 12 }}>
-              Formatted for direct copy-paste into the <strong>Sime Darby Property Annual Integrated Report (Sustainability Statement)</strong>.
-            </p>
-          </section>
-        </div>
-      )}
-
-      {/* TAB 4: MULTI-SITE PORTFOLIO LEDGER */}
-      {activeTab === 'portfolio' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <section className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <div>
-                <h2 style={{ margin: 0 }}>Consolidated Multi-Site Construction Ledger</h2>
-                <p className="sub" style={{ margin: '4px 0 0 0' }}>
-                  Managing {sites.length} active construction parcels across Sime Darby Property master townships.
-                </p>
-              </div>
-              <button
-                onClick={() => setShowAddSiteModal(true)}
-                className="btn btn-primary"
-                style={{ fontSize: '13px' }}
-              >
-                + Commission New Site
-              </button>
-            </div>
-
-            <table>
-              <thead>
-                <tr>
-                  <th>Site & Main Contractor</th>
-                  <th>Hardware Setup</th>
-                  <th>Monthly Diesel Saved</th>
-                  <th>Rental Avoided</th>
-                  <th>Net Cash OpEx Saved</th>
-                  <th>Scope 1 Abated</th>
-                  <th>Payback Timeline</th>
-                </tr>
-              </thead>
-              <tbody>
-                {siteResults.map(({ site: s, m }) => (
-                  <tr key={s.id}>
-                    <td><b>{s.name}</b><br /><small className="src">{s.contractor}</small></td>
-                    <td>{s.bessKWh} kWh BESS / {s.bessKW} kW + {s.solarKWp} kWp Solar</td>
-                    <td className="num">{fmt(m.avoidedL)} L (RM {fmt(m.fuelRM)})</td>
-                    <td className="num">RM {fmt(s.rentalAvoided || 5000)}/mo</td>
-                    <td className="num"><b style={{ color: '#0F766E' }}>RM {fmt(m.totalRM)}/mo</b></td>
-                    <td className="num">{fmt(m.co2t, 1)} tCO2e/mo</td>
-                    <td><span className="tag ok">{s.paybackMonths || 14} Months</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
-        </div>
-      )}
-
-      {/* TAB 5: 10-YEAR TOWNSHIP FLEET ROADMAP */}
-      {activeTab === 'roadmap' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <section className="card">
-            <h2>Sime Darby Property: 10-Year Master Township Fleet Relocation Roadmap</h2>
-            <p className="sub">
-              How containerized BESS assets roll over across sequential township phases to eliminate stranded contractor capex.
-            </p>
-            <table>
-              <thead>
-                <tr>
-                  <th>Asset Unit</th>
-                  <th>Capacity</th>
-                  <th>Current Project (2026)</th>
-                  <th>Current Stage</th>
-                  <th>Target Substation Date</th>
-                  <th>Next Township Parcel</th>
-                  <th>Executive Transfer Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><b>Unit BESS-01</b></td>
-                  <td>261 kWh / 200 kW</td>
-                  <td>Putra Heights Development</td>
-                  <td>Month 14 of 24 (58%)</td>
-                  <td>Dec 2026 (Substation energization)</td>
-                  <td><b>{FLEET_NEXT.putra.next}</b> ({FLEET_NEXT.putra.move})</td>
-                  <td>
-                    {transfers.putra.includes('Approved') ? (
-                      <span className="tag ok">{transfers.putra}</span>
-                    ) : (
-                      <button
-                        onClick={() => handleApproveTransfer('putra')}
-                        style={{
-                          padding: '4px 8px',
-                          backgroundColor: '#0F766E',
-                          color: '#fff',
-                          borderRadius: 6,
-                          border: 'none',
-                          fontSize: '11px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Authorize Transfer
-                      </button>
-                    )}
-                  </td>
-                </tr>
-                <tr>
-                  <td><b>Unit BESS-02</b></td>
-                  <td>522 kWh / 400 kW</td>
-                  <td>Melati Development</td>
-                  <td>Month 8 of 30 (27%)</td>
-                  <td>Aug 2027 (Compact sub energization)</td>
-                  <td><b>{FLEET_NEXT.melati.next}</b> ({FLEET_NEXT.melati.move})</td>
-                  <td>
-                    {transfers.melati.includes('Approved') ? (
-                      <span className="tag ok">{transfers.melati}</span>
-                    ) : (
-                      <button
-                        onClick={() => handleApproveTransfer('melati')}
-                        style={{
-                          padding: '4px 8px',
-                          backgroundColor: '#0F766E',
-                          color: '#fff',
-                          borderRadius: 6,
-                          border: 'none',
-                          fontSize: '11px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Authorize Transfer
-                      </button>
-                    )}
-                  </td>
-                </tr>
-                <tr>
-                  <td><b>Unit BESS-03</b></td>
-                  <td>261 kWh / 260 kW</td>
-                  <td>Bandar Rimbayu CLQ</td>
-                  <td>Proposed Deployment</td>
-                  <td>No permanent TNB connection</td>
-                  <td><b>{FLEET_NEXT.rimbayu.next}</b></td>
-                  <td><span className="tag">Permanent Worker Facility</span></td>
-                </tr>
-              </tbody>
-            </table>
-
-            <div style={{ background: '#F8FAFC', padding: 14, borderRadius: 8, border: '1px solid #E2E8F0', marginTop: 14 }}>
-              <h3 style={{ fontSize: '14px', margin: '0 0 6px 0', color: '#0F172A' }}>
-                💡 The Strategic Developer Moat: RM 9.84 Million Cumulative Township Value
-              </h3>
-              <p style={{ fontSize: '13px', color: '#475569', margin: 0, lineHeight: 1.45 }}>
-                Standard construction projects last 24 to 36 months before permanent TNB electricity is energized. By treating BESS units as centralized, relocatable Sime Darby Property capital assets, the RM 350k investment is amortized over 3 to 4 sequential parcels, delivering a <strong>14.2-month full cash payback</strong>. Under 1.2 daily cycles, Lithium Iron Phosphate (LFP) chemistry retains over <strong>76% State of Health (SoH) at Year 10</strong>, creating pure recurring profit for the developer.
-              </p>
-            </div>
-          </section>
-        </div>
-      )}
-
       {/* MODAL: COMMISSION NEW TOWNSHIP PARCEL */}
       {showAddSiteModal && (
         <div className="modal-backdrop" onClick={() => setShowAddSiteModal(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 560 }}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 540 }}>
             <div className="modal-header">
               <div>
-                <h2>Commission New Township Construction Parcel</h2>
-                <p className="sub">Register a new site to initiate GreenPulse IoT energy & acoustic telemetry.</p>
+                <h2 style={{ fontSize: '16px' }}>Add New Project Site</h2>
+                <p className="sub" style={{ margin: '2px 0 0 0', fontSize: '12px' }}>
+                  Register a new Sime Darby Property site for clean solar and battery monitoring.
+                </p>
               </div>
               <button className="btn btn-ghost" onClick={() => setShowAddSiteModal(false)}>✕</button>
             </div>
@@ -647,7 +636,7 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>Awarded Main Contractor</label>
+                  <label style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>Main Contractor</label>
                   <input
                     type="text"
                     required
@@ -660,7 +649,7 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>BESS Capacity (kWh)</label>
+                  <label style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>Battery Capacity</label>
                   <select
                     value={newSite.bessKWh}
                     onChange={(e) => {
@@ -701,14 +690,13 @@ The Main Contractor shall deploy an approved Containerized Battery Energy Storag
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  Commission Site & Start Telemetry
+                  Save Project
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-
     </Shell>
   );
 }
