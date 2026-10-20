@@ -108,6 +108,101 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
     };
   }, [activePlanDay]);
 
+  // Autonomous equipment planning based on actual connected equipment and the selected day's weather forecast
+  const equipmentPlan = useMemo(() => {
+    const rainProb = activeForecastDay?.rainProbability || 60;
+    const stormStart = activeForecastDay?.stormStart || 13;
+    const stormEnd = activeForecastDay?.stormEnd || 16;
+    const isRainDay = rainProb >= 50;
+
+    const chargeSolar = [];
+    const pauseRain = [];
+    const alwaysPowered = [];
+
+    allEquipment.forEach((eq) => {
+      const nameLower = eq.name.toLowerCase();
+      const isShiftable = eq.shifted || nameLower.includes('charge') || nameLower.includes('charging') || nameLower.includes('forklift');
+      const isCritical = nameLower.includes('crane') || nameLower.includes('hoist') || nameLower.includes('pump') || nameLower.includes('base') || nameLower.includes('office') || nameLower.includes('light') || nameLower.includes('dorm') || nameLower.includes('aircon') || (eq.priority && eq.priority.includes('P0'));
+
+      if (isShiftable) {
+        if (isRainDay) {
+          const startH = 9;
+          const endH = Math.max(11, Math.floor(stormStart));
+          chargeSolar.push({
+            id: eq.id,
+            name: eq.name,
+            kw: eq.kw,
+            action: `Charge ${startH}:00 to ${endH}:00`,
+            slotNote: `Pre-charges to 100% on free solar before the ${stormStart}:00 rain window`,
+            tag: 'Morning Solar Harvest',
+            tagColor: '#0F766E',
+            tagBg: '#F0FDFA',
+          });
+          pauseRain.push({
+            id: eq.id + '-pause',
+            name: eq.name,
+            kw: eq.kw,
+            action: `Paused ${stormStart}:00 to ${Math.ceil(stormEnd)}:30`,
+            slotNote: 'Charging automatically suspended during storm window to preserve battery voltage for tower cranes',
+            tag: 'Auto-Paused',
+            tagColor: '#DC2626',
+            tagBg: '#FEF2F2',
+          });
+        } else {
+          chargeSolar.push({
+            id: eq.id,
+            name: eq.name,
+            kw: eq.kw,
+            action: 'Charge 10:00 to 15:30',
+            slotNote: `Low rain probability (${rainProb}%). Runs continuously on peak solar irradiance`,
+            tag: 'Full Solar Window',
+            tagColor: '#0F766E',
+            tagBg: '#F0FDFA',
+          });
+        }
+      } else if (isCritical) {
+        alwaysPowered.push({
+          id: eq.id,
+          name: eq.name,
+          kw: eq.kw,
+          action: '100% Continuous Power',
+          slotNote: isRainDay
+            ? 'Protected by MegaBatt BESS. Zero lifting interruptions even if rain cuts solar'
+            : 'Powered seamlessly across daytime solar generation and evening battery storage',
+          tag: 'BESS Protected',
+          tagColor: '#1E40AF',
+          tagBg: '#EFF6FF',
+        });
+      } else {
+        if (isRainDay && eq.kw >= 20) {
+          pauseRain.push({
+            id: eq.id + '-shed',
+            name: eq.name,
+            kw: eq.kw,
+            action: `Standby ${stormStart}:00 to ${Math.ceil(stormEnd)}:30`,
+            slotNote: 'Secondary high-draw circuit paused during storm cloud cover',
+            tag: 'Storm Buffer',
+            tagColor: '#D97706',
+            tagBg: '#FEF3C7',
+          });
+        } else {
+          alwaysPowered.push({
+            id: eq.id,
+            name: eq.name,
+            kw: eq.kw,
+            action: 'Continuous Normal Load',
+            slotNote: 'Non-interrupted circuit covered within inverter operating threshold',
+            tag: 'Active',
+            tagColor: '#059669',
+            tagBg: '#ECFDF5',
+          });
+        }
+      }
+    });
+
+    return { chargeSolar, pauseRain, alwaysPowered, isRainDay };
+  }, [allEquipment, activeForecastDay]);
+
   const day = smart ? dSmart : plain;
   const now = day.hours[hour];
   const m = useMemo(() => monthly(site), [site]);
@@ -474,65 +569,128 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
                 <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: 8, padding: '12px 14px' }}>
                   <div style={{ fontSize: '11px', color: '#065F46', fontWeight: 600 }}>Generator Status</div>
                   <div style={{ fontSize: '18px', fontWeight: 800, color: '#059669', margin: '4px 0 0 0', display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <span style={{ fontSize: '12px' }}>🟢</span> 100% OFF <small style={{ fontSize: '11px', color: '#047857', fontWeight: 600 }}>(0 L)</small>
+                    <span style={{ fontSize: '14px' }}></span> 100% OFF
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Smart Equipment Charging Plan */}
+            {/* Autonomous Equipment Charging & Dispatch Plan */}
             <div>
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Equipment Charging Plan ({activeForecastDay.dayLabel})
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-                {/* Column 1: Charge on Sun */}
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '12px 14px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                    <span style={{ fontSize: '14px' }}>🟢</span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F766E' }}>Charge on Solar</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Autonomous Equipment Dispatch Plan ({activeForecastDay.dayLabel})
                   </div>
-                  <ul style={{ margin: 0, paddingLeft: 18, fontSize: '12px', color: '#334155', display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    <li>EV Forklifts (8.5 kW)</li>
-                    <li>Scissor Lifts (4.0 kW)</li>
-                    <li>Hand Tools & Battery Packs (3.2 kW)</li>
-                    <li>Site Radios & Drones (1.5 kW)</li>
-                  </ul>
+                  <div style={{ fontSize: '12px', color: '#64748B', marginTop: 2 }}>
+                    Auto-scheduled for {allEquipment.length} connected circuits based on {activeForecastDay.conditionText.toLowerCase()} ({activeForecastDay.rainProbability}% rain probability).
+                  </div>
                 </div>
+              </div>
 
-                {/* Column 2: Rain Protection / Pause */}
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '12px 14px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                    <span style={{ fontSize: '14px' }}>{activeForecastDay.rainProbability >= 50 ? '🔴' : '☀️'}</span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: activeForecastDay.rainProbability >= 50 ? '#DC2626' : '#059669' }}>
-                      {activeForecastDay.rainProbability >= 50 ? `Pause during Rain (${activeForecastDay.stormStart || 13}:00 to ${activeForecastDay.stormEnd || 16}:30)` : 'No Rain Pause Needed'}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                {/* Column 1: Charge on Solar */}
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '14px', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, paddingBottom: 8, borderBottom: '1px solid #E2E8F0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: '14px' }}>🟢</span>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F766E' }}>Charge on Solar</span>
+                    </div>
+                    <span style={{ fontSize: '11px', color: '#0F766E', fontWeight: 700, background: '#F0FDFA', border: '1px solid #CCFBF1', padding: '2px 8px', borderRadius: 4 }}>
+                      {equipmentPlan.chargeSolar.length} Planned
                     </span>
                   </div>
-                  {activeForecastDay.rainProbability >= 50 ? (
-                    <ul style={{ margin: 0, paddingLeft: 18, fontSize: '12px', color: '#334155', display: 'flex', flexDirection: 'column', gap: 5 }}>
-                      <li>Secondary spare battery banks</li>
-                      <li>Heavy workshop heaters</li>
-                      <li>Welding training benches</li>
-                    </ul>
+
+                  {equipmentPlan.chargeSolar.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {equipmentPlan.chargeSolar.map((eq) => (
+                        <div key={eq.id} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 6, padding: '8px 10px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                            <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>{eq.name}</span>
+                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748B' }}>{eq.kw} kW</span>
+                          </div>
+                          <div style={{ fontSize: '11px', fontWeight: 700, color: '#0F766E' }}>
+                            {eq.action}
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#64748B', marginTop: 3, lineHeight: 1.3 }}>
+                            {eq.slotNote}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   ) : (
-                    <div style={{ fontSize: '12px', color: '#047857', padding: '4px 0', lineHeight: 1.4 }}>
-                      Low rain risk ({activeForecastDay.rainProbability}%). All secondary equipment safe to run all day on clean solar.
+                    <div style={{ fontSize: '12px', color: '#64748B', fontStyle: 'italic', padding: '8px 0' }}>
+                      No shiftable charging loads configured for this day.
                     </div>
                   )}
                 </div>
 
-                {/* Column 3: Heavy Machinery */}
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '12px 14px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                    <span style={{ fontSize: '14px' }}>⚡</span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#2563EB' }}>Always Powered</span>
+                {/* Column 2: Rain Protection / Pause */}
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '14px', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, paddingBottom: 8, borderBottom: '1px solid #E2E8F0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: '14px' }}>{equipmentPlan.isRainDay ? '🔴' : '☀️'}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: equipmentPlan.isRainDay ? '#DC2626' : '#059669' }}>
+                        {equipmentPlan.isRainDay ? 'Pause during Rain' : 'No Rain Pause'}
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '11px', color: equipmentPlan.isRainDay ? '#DC2626' : '#059669', fontWeight: 700, background: equipmentPlan.isRainDay ? '#FEF2F2' : '#ECFDF5', border: `1px solid ${equipmentPlan.isRainDay ? '#FECACA' : '#A7F3D0'}`, padding: '2px 8px', borderRadius: 4 }}>
+                      {equipmentPlan.pauseRain.length} Curtailed
+                    </span>
                   </div>
-                  <ul style={{ margin: 0, paddingLeft: 18, fontSize: '12px', color: '#334155', display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    <li>Main Tower Crane (45 kW)</li>
-                    <li>Passenger Hoist (22 kW)</li>
-                    <li>Water Discharge Pumps (15 kW)</li>
-                    <li>Worker CLQ Dorm Fans (4.2 kW)</li>
-                  </ul>
+
+                  {equipmentPlan.isRainDay && equipmentPlan.pauseRain.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {equipmentPlan.pauseRain.map((eq) => (
+                        <div key={eq.id} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 6, padding: '8px 10px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                            <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>{eq.name}</span>
+                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748B' }}>{eq.kw} kW</span>
+                          </div>
+                          <div style={{ fontSize: '11px', fontWeight: 700, color: '#DC2626' }}>
+                            {eq.action}
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#64748B', marginTop: 3, lineHeight: 1.3 }}>
+                            {eq.slotNote}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '12px', color: '#047857', background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: 6, padding: '12px', lineHeight: 1.4 }}>
+                      ✓ Low rain risk ({activeForecastDay.rainProbability}%). All site equipment can run continuously on solar without rain pauses.
+                    </div>
+                  )}
+                </div>
+
+                {/* Column 3: Heavy Machinery (Always Powered) */}
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '14px', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, paddingBottom: 8, borderBottom: '1px solid #E2E8F0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: '14px' }}>⚡</span>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: '#2563EB' }}>Always Powered</span>
+                    </div>
+                    <span style={{ fontSize: '11px', color: '#2563EB', fontWeight: 700, background: '#EFF6FF', border: '1px solid #BFDBFE', padding: '2px 8px', borderRadius: 4 }}>
+                      {equipmentPlan.alwaysPowered.length} Protected
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {equipmentPlan.alwaysPowered.map((eq) => (
+                      <div key={eq.id} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 6, padding: '8px 10px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                          <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>{eq.name}</span>
+                          <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748B' }}>{eq.kw} kW</span>
+                        </div>
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: '#2563EB' }}>
+                          {eq.action}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#64748B', marginTop: 3, lineHeight: 1.3 }}>
+                          {eq.slotNote}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
