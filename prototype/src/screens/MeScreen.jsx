@@ -575,30 +575,20 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
               </div>
             </div>
 
-            {/* Autonomous Equipment Charging & Dispatch Plan */}
+            {/* Equipment Power Schedule */}
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    Autonomous Equipment Dispatch Plan ({activeForecastDay.dayLabel})
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#64748B', marginTop: 2 }}>
-                    Auto-scheduled for {allEquipment.length} connected circuits based on {activeForecastDay.conditionText.toLowerCase()} ({activeForecastDay.rainProbability}% rain probability).
-                  </div>
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Equipment Power Schedule ({activeForecastDay.dayLabel})
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
                 {/* Column 1: Charge on Solar */}
                 <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, paddingBottom: 8, borderBottom: '1px solid #E2E8F0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: '14px' }}>🟢</span>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F766E' }}>Charge on Solar</span>
-                    </div>
-                    <span style={{ fontSize: '11px', color: '#0F766E', fontWeight: 700, background: '#F0FDFA', border: '1px solid #CCFBF1', padding: '2px 8px', borderRadius: 4 }}>
-                      {equipmentPlan.chargeSolar.length} Planned
-                    </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, paddingBottom: 8, borderBottom: '1px solid #E2E8F0' }}>
+                    <span style={{ fontSize: '14px' }}>🟢</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F766E' }}>Charge on Solar</span>
                   </div>
 
                   {equipmentPlan.chargeSolar.length > 0 ? (
@@ -627,15 +617,10 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
 
                 {/* Column 2: Rain Protection / Pause */}
                 <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, paddingBottom: 8, borderBottom: '1px solid #E2E8F0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: '14px' }}>{equipmentPlan.isRainDay ? '🔴' : '☀️'}</span>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: equipmentPlan.isRainDay ? '#DC2626' : '#059669' }}>
-                        {equipmentPlan.isRainDay ? 'Pause during Rain' : 'No Rain Pause'}
-                      </span>
-                    </div>
-                    <span style={{ fontSize: '11px', color: equipmentPlan.isRainDay ? '#DC2626' : '#059669', fontWeight: 700, background: equipmentPlan.isRainDay ? '#FEF2F2' : '#ECFDF5', border: `1px solid ${equipmentPlan.isRainDay ? '#FECACA' : '#A7F3D0'}`, padding: '2px 8px', borderRadius: 4 }}>
-                      {equipmentPlan.pauseRain.length} Curtailed
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, paddingBottom: 8, borderBottom: '1px solid #E2E8F0' }}>
+                    <span style={{ fontSize: '14px' }}>{equipmentPlan.isRainDay ? '🔴' : '☀️'}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: equipmentPlan.isRainDay ? '#DC2626' : '#059669' }}>
+                      {equipmentPlan.isRainDay ? 'Pause during Rain' : 'No Rain Pause'}
                     </span>
                   </div>
 
@@ -665,14 +650,9 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
 
                 {/* Column 3: Heavy Machinery (Always Powered) */}
                 <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, paddingBottom: 8, borderBottom: '1px solid #E2E8F0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: '14px' }}>⚡</span>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: '#2563EB' }}>Always Powered</span>
-                    </div>
-                    <span style={{ fontSize: '11px', color: '#2563EB', fontWeight: 700, background: '#EFF6FF', border: '1px solid #BFDBFE', padding: '2px 8px', borderRadius: 4 }}>
-                      {equipmentPlan.alwaysPowered.length} Protected
-                    </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, paddingBottom: 8, borderBottom: '1px solid #E2E8F0' }}>
+                    <span style={{ fontSize: '14px' }}>⚡</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#2563EB' }}>Always Powered</span>
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
