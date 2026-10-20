@@ -185,34 +185,11 @@ export default function Shell({
 
         {/* User Role Card & Logout */}
         <div className="side-user">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
-            {user.icon && (
-              <span
-                style={{
-                  fontSize: '16px',
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  display: 'grid',
-                  placeItems: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                {user.icon}
-              </span>
-            )}
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <b style={{ display: 'block', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', fontSize: '13px' }}>
-                {user.title}
-              </b>
-              <small style={{ display: 'block', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', fontSize: '11px', color: '#94A3B8' }}>
-                {user.org || 'Site Operations'}
-              </small>
-            </div>
+          <div>
+            <b>{user.title}</b>
+            <small>{user.org}</small>
           </div>
-          <button id="logout" className="logout" onClick={onLogout} title="Log out">
+          <button id="logout" className="logout" onClick={onLogout}>
             Log out
           </button>
         </div>
