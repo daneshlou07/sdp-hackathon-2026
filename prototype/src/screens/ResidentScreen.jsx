@@ -3,7 +3,7 @@ import { useState } from 'react';
 export default function ResidentScreen({ user, complaints = [], onAddComplaint, onLogout }) {
   const [unitBlock, setUnitBlock] = useState('Damayan Residensi (Block B - Direct Site Facing)');
   const [category, setCategory] = useState('Low-Frequency Engine / Motor Hum');
-  const [issue, setIssue] = useState('Audible low-frequency hum from construction zone while putting baby to sleep.');
+  const [issue, setIssue] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e) => {
@@ -11,7 +11,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
     if (!issue.trim()) return;
 
     onAddComplaint({
-      who: `Anonymous Resident (${unitBlock})`,
+      who: `Resident (${unitBlock.split(' (')[0]})`,
       issue: `[${category}] ${issue.trim()}`,
       action: '',
       closed: false,
@@ -23,7 +23,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#F8FAFC', color: '#0F172A', fontFamily: 'inherit' }}>
-      {/* Top Navigation Bar */}
+      {/* Top Header */}
       <header
         style={{
           backgroundColor: '#0F172A',
@@ -46,44 +46,38 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
               fontSize: '14px',
             }}
           >
-            GP
+            SDP
           </span>
           <div>
             <div style={{ fontWeight: 800, fontSize: '16px', letterSpacing: '-0.02em' }}>
-              GreenPulse Community Sound Care
+              Sime Darby Property: Resident Community Portal
             </div>
             <div style={{ fontSize: '12px', color: '#94A3B8' }}>
-              Sime Darby Property | Phase 1 Resident Care Portal (Putra Heights)
+              Putra Heights Phase 2 Boundary Care
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ textAlign: 'right', display: 'none', md: 'block' }}>
-            <div style={{ fontSize: '13px', fontWeight: 600 }}>{user.title}</div>
-            <div style={{ fontSize: '11px', color: '#94A3B8' }}>{user.org}</div>
-          </div>
-          <button
-            onClick={onLogout}
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              color: '#FFFFFF',
-              border: '1px solid rgba(255,255,255,0.2)',
-              padding: '6px 14px',
-              borderRadius: 8,
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
-            Log Out
-          </button>
-        </div>
+        <button
+          onClick={onLogout}
+          style={{
+            backgroundColor: 'rgba(255,255,255,0.1)',
+            color: '#FFFFFF',
+            border: '1px solid rgba(255,255,255,0.2)',
+            padding: '6px 14px',
+            borderRadius: 8,
+            fontSize: '12px',
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          Log Out
+        </button>
       </header>
 
-      {/* Main Container */}
+      {/* Main Content */}
       <main style={{ maxWidth: 1040, margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-        {/* Transparency Hero Banner */}
+        {/* Live Boundary Noise & Clean Power Banner */}
         <section
           style={{
             background: 'linear-gradient(135deg, #0F766E 0%, #115E59 100%)',
@@ -95,12 +89,14 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
             <div>
-
-              <h1 style={{ fontSize: '24px', fontWeight: 800, margin: '8px 0 6px 0' }}>
-                Putra Heights Phase 2 Construction Boundary
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#CCFBF1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Live Sound Telemetry
+              </div>
+              <h1 style={{ fontSize: '24px', fontWeight: 800, margin: '6px 0' }}>
+                Putra Heights Site Boundary (Facing Damayan Residensi)
               </h1>
-              <p style={{ margin: 0, fontSize: '14px', color: '#CCFBF1', maxWidth: 600, lineHeight: 1.5 }}>
-                Direct acoustic telemetry from the sensor facing Damayan Residensi. This site is powered by clean solar and battery storage to safeguard neighborhood tranquility.
+              <p style={{ margin: 0, fontSize: '14px', color: '#CCFBF1', maxWidth: 620, lineHeight: 1.5 }}>
+                This site is powered by clean solar and battery storage. Zero continuous diesel generator running next to your home.
               </p>
             </div>
 
@@ -109,15 +105,15 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                 backgroundColor: 'rgba(255,255,255,0.15)',
                 backdropFilter: 'blur(8px)',
                 borderRadius: 12,
-                padding: '16px 20px',
+                padding: '16px 22px',
                 textAlign: 'center',
-                minWidth: 180,
+                minWidth: 190,
                 border: '1px solid rgba(255,255,255,0.25)',
               }}
             >
-              <div style={{ fontSize: '12px', fontWeight: 600, color: '#CCFBF1' }}>Live Boundary Sound</div>
-              <div style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.03em' }}>
-                54.1 <span style={{ fontSize: '18px', fontWeight: 600 }}>dBA</span>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: '#CCFBF1' }}>Live Boundary Noise</div>
+              <div style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.03em' }} className="num">
+                54.10 <span style={{ fontSize: '18px', fontWeight: 600 }}>dBA</span>
               </div>
               <div
                 style={{
@@ -125,13 +121,13 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                   color: '#FFFFFF',
                   fontSize: '11px',
                   fontWeight: 800,
-                  padding: '2px 8px',
+                  padding: '3px 10px',
                   borderRadius: 9999,
                   marginTop: 4,
                   display: 'inline-block',
                 }}
               >
-                ✓ 5.9 dBA Below DOE Limit
+                ✓ Safe (5.90 dBA below 60.00 dBA limit)
               </div>
             </div>
           </div>
@@ -147,12 +143,12 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
             }}
           >
             <div>
-              <div style={{ fontSize: '11px', color: '#CCFBF1' }}>Statutory Daytime Limit (DOE)</div>
-              <div style={{ fontSize: '14px', fontWeight: 700 }}>60.0 dBA L90 (Schedule 6)</div>
+              <div style={{ fontSize: '11px', color: '#CCFBF1' }}>DOE Statutory Daytime Limit</div>
+              <div style={{ fontSize: '14px', fontWeight: 700 }} className="num">60.00 dBA (Schedule 6)</div>
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#CCFBF1' }}>Site Clean Energy Source</div>
-              <div style={{ fontSize: '14px', fontWeight: 700 }}>MegaBatt 261 kWh BESS + 150 kWp Solar</div>
+              <div style={{ fontSize: '11px', color: '#CCFBF1' }}>Site Power System</div>
+              <div style={{ fontSize: '14px', fontWeight: 700 }}>261 kWh Battery + 150 kWp Solar</div>
             </div>
             <div>
               <div style={{ fontSize: '11px', color: '#CCFBF1' }}>Backup Diesel Generator</div>
@@ -161,9 +157,9 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
           </div>
         </section>
 
-        {/* Two-Column Grid: Report Form & Live Inquiries */}
+        {/* 2 Columns: Report Form + Live Community Inquiries */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
-          {/* Report Disturbance Form */}
+          {/* Column 1: Anonymous Report Form */}
           <section
             style={{
               backgroundColor: '#FFFFFF',
@@ -174,23 +170,11 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
             }}
           >
             <div style={{ marginBottom: 16 }}>
-              <span
-                style={{
-                  backgroundColor: '#FEF2F2',
-                  color: '#991B1B',
-                  fontSize: '11px',
-                  fontWeight: 800,
-                  padding: '2px 8px',
-                  borderRadius: 4,
-                }}
-              >
-                DIRECT CONTRACTOR ESCALATION
-              </span>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '8px 0 4px 0' }}>
-                Report Noise Disturbance or Inquiry
+              <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '0 0 4px 0' }}>
+                Report Noise, Dust, or Disturbance
               </h2>
               <p style={{ fontSize: '13px', color: '#64748B', margin: 0, lineHeight: 1.45 }}>
-                Noticed unusual machinery noise, dust, or vehicle speeding? Submit your feedback directly to the on-site Environmental Officer (Sime Darby Property).
+                Hear unusual machinery noise, dust, or bright floodlights? Submit your feedback directly to the on-site Environmental Officer.
               </p>
             </div>
 
@@ -207,12 +191,12 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                   lineHeight: 1.45,
                 }}
               >
-                ✅ <strong>Feedback Received:</strong> Your observation has been dispatched to the Site Environmental Officer. A perimeter sound inspection has been initiated. Thank you for helping keep our township quiet.
+                ✅ <strong>Feedback Received:</strong> Your report has been dispatched to the on-site Environmental Officer. An inspection has been triggered.
               </div>
             )}
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {/* Permanent Anonymous Guarantee Banner */}
+              {/* Anonymous Guarantee */}
               <div
                 style={{
                   display: 'flex',
@@ -227,17 +211,17 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                 <span style={{ fontSize: '18px' }}>🛡️</span>
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: 800, color: '#166534' }}>
-                    100% Anonymous by Design (Zero Personal Data Collected)
+                    100% Anonymous (No personal data collected)
                   </div>
-                  <div style={{ fontSize: '11px', color: '#15803D', lineHeight: 1.35 }}>
-                    No names, phone numbers, or unit numbers are requested. Your privacy is protected under PDPA while enabling the EO to locate the disturbance.
+                  <div style={{ fontSize: '11px', color: '#15803D' }}>
+                    No names, IC numbers, or phone numbers are required.
                   </div>
                 </div>
               </div>
 
               <div>
                 <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', display: 'block', marginBottom: 4 }}>
-                  My General Location / Phase (For Sound Sensor Triangulation)
+                  Your General Area / Building
                 </label>
                 <select
                   value={unitBlock}
@@ -251,14 +235,11 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                     backgroundColor: '#FFFFFF',
                   }}
                 >
-                  <option value="Damayan Residensi (Block B - Direct Site Facing)">Damayan Residensi (Block B - Direct Site Facing)</option>
+                  <option value="Damayan Residensi (Block B - Direct Site Facing)">Damayan Residensi (Block B - Facing Site)</option>
                   <option value="Damayan Residensi (Block A - North Facing)">Damayan Residensi (Block A - North Facing)</option>
-                  <option value="Putra Avenue Landed Homes (Boundary West)">Putra Avenue Landed Homes (Boundary West)</option>
+                  <option value="Putra Avenue Landed Homes">Putra Avenue Landed Homes</option>
                   <option value="Putra Heights Commercial Hub">Putra Heights Commercial Hub</option>
                 </select>
-                <p style={{ fontSize: '11px', color: '#64748B', margin: '4px 0 0 0' }}>
-                  The Environmental Officer uses this to inspect the perimeter sound sensor nearest to your block.
-                </p>
               </div>
 
               <div>
@@ -274,25 +255,26 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                     borderRadius: 8,
                     border: '1px solid #CBD5E1',
                     fontSize: '13px',
+                    backgroundColor: '#FFFFFF',
                   }}
                 >
-                  <option value="Low-Frequency Engine / Motor Hum">Low-Frequency Engine / Motor Hum</option>
-                  <option value="Late-Night Hoisting / Crane Movement">Late-Night Crane / Hoist Movement</option>
-                  <option value="Access Road Lorry Noise / Speeding">Access Road Lorries / Speeding</option>
-                  <option value="Dust / Mud on Public Road">Dust / Wheel Wash Mud</option>
-                  <option value="Bright Floodlight Glare into Bedrooms">Bright Floodlight Glare into Bedrooms</option>
+                  <option value="Low-Frequency Engine / Motor Hum">Low-Frequency Engine or Motor Hum</option>
+                  <option value="Late-Night Crane / Hoist Movement">Late-Night Crane or Hoist Movement</option>
+                  <option value="Access Road Lorries / Speeding">Access Road Lorries or Speeding</option>
+                  <option value="Dust / Mud on Public Road">Dust or Mud on Public Road</option>
+                  <option value="Bright Floodlight Glare into Bedrooms">Bright Floodlights Shining into Bedrooms</option>
                   <option value="General Environmental Inquiry">General Inquiry</option>
                 </select>
               </div>
 
               <div>
                 <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', display: 'block', marginBottom: 4 }}>
-                  Observation Details & Time of Occurrence
+                  Observation Details & Time
                 </label>
                 <textarea
                   required
                   rows={3}
-                  placeholder="Describe what you hear or observe from your unit (e.g. constant humming vibration, sudden metallic banging, unauthorized generator running)..."
+                  placeholder="Describe what you hear or see (e.g. constant humming vibration, loud banging after 8 PM, bright light facing windows)..."
                   value={issue}
                   onChange={(e) => setIssue(e.target.value)}
                   style={{
@@ -324,12 +306,12 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                   gap: 8,
                 }}
               >
-                <span>📢</span> Dispatch to Site Environmental Officer
+                <span>📢</span> Send to Site Environmental Officer
               </button>
             </form>
           </section>
 
-          {/* Community Feedback & Live Resolution Log */}
+          {/* Column 2: Recent Feedback & Actions Taken */}
           <section
             style={{
               backgroundColor: '#FFFFFF',
@@ -342,23 +324,11 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
             }}
           >
             <div style={{ marginBottom: 16 }}>
-              <span
-                style={{
-                  backgroundColor: '#F1F5F9',
-                  color: '#475569',
-                  fontSize: '11px',
-                  fontWeight: 800,
-                  padding: '2px 8px',
-                  borderRadius: 4,
-                }}
-              >
-                COMMUNITY TRANSPARENCY
-              </span>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '8px 0 4px 0' }}>
-                Phase 1 Resident Inquiries & Verified Actions
+              <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '0 0 4px 0' }}>
+                Recent Community Feedback & Actions Taken
               </h2>
               <p style={{ fontSize: '13px', color: '#64748B', margin: 0 }}>
-                Official log of feedback reviewed and resolved by the Environmental Officer.
+                Official log of reports reviewed and resolved by the site team.
               </p>
             </div>
 
@@ -392,7 +362,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                         </div>
                       ) : (
                         <div style={{ color: '#B45309', backgroundColor: '#FEF3C7', padding: '4px 8px', borderRadius: 4, border: '1px solid #FDE68A' }}>
-                          <strong>⏳ Under Active Review:</strong> Environmental Officer has been alerted.
+                          <strong>⏳ Under Review:</strong> Environmental Officer has been alerted.
                         </div>
                       )}
                     </div>
@@ -411,61 +381,14 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                 lineHeight: 1.45,
               }}
             >
-              💡 <strong>Direct Resolution Policy:</strong> By resolving inquiries within minutes on-site, Sime Darby Property prevents municipal stop-work notices and preserves good neighbour relations.
+              💡 <strong>On-Site Fast Resolution:</strong> Issues reported here are resolved directly on-site to preserve neighborhood tranquility.
             </div>
           </section>
         </div>
 
-        {/* Community Governance Information Cards */}
+        {/* Bottom 2 Cards: Permitted Hours & Process */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
-          {/* Card 1: Chain of Custody */}
-          <div
-            style={{
-              backgroundColor: '#FFFFFF',
-              borderRadius: 12,
-              padding: '20px 24px',
-              border: '1px solid #E2E8F0',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <span style={{ fontSize: '18px' }}>⚖️</span>
-              <h3 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: '#0F172A' }}>
-                Who Handles Your Complaint? (Chain of Custody)
-              </h3>
-            </div>
-            <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.45, margin: '0 0 14px 0' }}>
-              Complaints are legally governed under the <strong>DOE Environmental Management Plan (EMP Section 8: Public Grievance Redress Mechanism)</strong>:
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                <span style={{ backgroundColor: '#EEF2FF', color: '#4F46E5', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
-                  1
-                </span>
-                <div style={{ fontSize: '12px', color: '#334155' }}>
-                  <strong>Site Environmental Officer (EO):</strong> Licensed officer on site receives your report and immediately cross-checks perimeter decibel sensors.
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                <span style={{ backgroundColor: '#EEF2FF', color: '#4F46E5', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
-                  2
-                </span>
-                <div style={{ fontSize: '12px', color: '#334155' }}>
-                  <strong>Site Foreman & M&E Lead:</strong> EO inspects active zones to shut down unshielded auxiliary equipment or idling delivery lorries within 30 minutes.
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                <span style={{ backgroundColor: '#EEF2FF', color: '#4F46E5', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
-                  3
-                </span>
-                <div style={{ fontSize: '12px', color: '#334155' }}>
-                  <strong>Sime Darby Township Liaison:</strong> Copy forwarded to Sime Darby Property Township Management for independent community quality audit.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: Permitted Working Hours */}
+          {/* Permitted Working Hours */}
           <div
             style={{
               backgroundColor: '#FFFFFF',
@@ -485,33 +408,80 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
               <div style={{ padding: '8px 12px', backgroundColor: '#F8FAFC', borderRadius: 8, border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>Monday - Saturday (Daytime)</div>
-                  <div style={{ fontSize: '11px', color: '#64748B' }}>Heavy framing, tower cranes, hoists</div>
+                  <div style={{ fontSize: '11px', color: '#64748B' }}>Normal construction, cranes, and hoists</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '12px', fontWeight: 800, color: '#059669' }}>08:00 - 18:00</div>
-                  <div style={{ fontSize: '10px', color: '#64748B' }}>Limit: 60 dBA</div>
+                  <div style={{ fontSize: '10px', color: '#64748B' }}>Limit: 60.00 dBA</div>
                 </div>
               </div>
 
               <div style={{ padding: '8px 12px', backgroundColor: '#F8FAFC', borderRadius: 8, border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>Monday - Saturday (Evening)</div>
-                  <div style={{ fontSize: '11px', color: '#64748B' }}>Restricted low-noise indoor finishing only</div>
+                  <div style={{ fontSize: '11px', color: '#64748B' }}>Quiet indoor finishing work only</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '12px', fontWeight: 800, color: '#D97706' }}>18:00 - 22:00</div>
-                  <div style={{ fontSize: '10px', color: '#64748B' }}>Limit: 55 dBA</div>
+                  <div style={{ fontSize: '10px', color: '#64748B' }}>Limit: 55.00 dBA</div>
                 </div>
               </div>
 
               <div style={{ padding: '8px 12px', backgroundColor: '#FEF2F2', borderRadius: 8, border: '1px solid #FECACA', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: '#991B1B' }}>Night Silent Window & Sundays</div>
-                  <div style={{ fontSize: '11px', color: '#B91C1C' }}>Zero construction allowed. 100% shutdown</div>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: '#991B1B' }}>Sundays & Late Night</div>
+                  <div style={{ fontSize: '11px', color: '#B91C1C' }}>STRICTLY NO WORK. 100% shutdown</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '12px', fontWeight: 800, color: '#991B1B' }}>22:00 - 08:00</div>
-                  <div style={{ fontSize: '10px', color: '#B91C1C' }}>Limit: 45 dBA</div>
+                  <div style={{ fontSize: '10px', color: '#B91C1C' }}>Limit: 45.00 dBA</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* How Your Report Is Handled */}
+          <div
+            style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: 12,
+              padding: '20px 24px',
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <span style={{ fontSize: '18px' }}>⚖️</span>
+              <h3 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: '#0F172A' }}>
+                How Your Report Is Handled
+              </h3>
+            </div>
+            <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.45, margin: '0 0 14px 0' }}>
+              Every complaint is officially logged and tracked until resolved:
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <span style={{ backgroundColor: '#EEF2FF', color: '#4F46E5', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
+                  1
+                </span>
+                <div style={{ fontSize: '12px', color: '#334155' }}>
+                  <strong>Site Environmental Officer Alert:</strong> The licensed officer receives your notification and checks boundary sound sensors immediately.
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <span style={{ backgroundColor: '#EEF2FF', color: '#4F46E5', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
+                  2
+                </span>
+                <div style={{ fontSize: '12px', color: '#334155' }}>
+                  <strong>Immediate On-Site Action:</strong> The team investigates the noise source (e.g. idling truck, unshielded tool) and adjusts or turns it off within 30 minutes.
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <span style={{ backgroundColor: '#EEF2FF', color: '#4F46E5', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
+                  3
+                </span>
+                <div style={{ fontSize: '12px', color: '#334155' }}>
+                  <strong>Resolution Updated in Public Log:</strong> What was done to fix the issue is posted here so you can verify the result.
                 </div>
               </div>
             </div>
