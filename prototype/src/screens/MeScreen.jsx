@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Shell from '../components/Shell';
 import { DayChart } from '../components/Charts';
 import { SITES } from '../data/sites';
-import { WEATHER, planTips, monthly, fmt, GENSET_KWH_PER_L } from '../data/model';
+import { WEATHER, planTips, monthly, fmt, GENSET_KWH_PER_L, DIESEL_RM_PER_L, simulateDay } from '../data/model';
 import { getSolarCastForecast } from '../data/aiEngine';
 import { fetchLiveSiteWeather, getGoogleWeatherApiKey, setGoogleWeatherApiKey } from '../data/weatherService';
 import AiCopilotModal from '../components/AiCopilotModal';
@@ -21,6 +21,8 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
   const [isWeatherKeyModalOpen, setIsWeatherKeyModalOpen] = useState(false);
   const [googleKeyInput, setGoogleKeyInput] = useState('');
   const weather = 'storm';
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const [simWeather, setSimWeather] = useState('storm');
   const [hour, setHour] = useState(11);
   const [smart, setSmart] = useState(true);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
@@ -70,6 +72,43 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
 
   const { tips, smart: dSmart, plain } = useMemo(() => planTips(site, weather), [site, weather]);
   const solarCast = useMemo(() => getSolarCastForecast(hour, weather), [hour, weather]);
+
+  // 7-day forecast list
+  const dailyForecastList = useMemo(() => {
+    if (liveWeather?.dailyForecast && liveWeather.dailyForecast.length > 0) {
+      return liveWeather.dailyForecast;
+    }
+    return [
+      { dayLabel: 'Today', dateFormatted: 'Oct 20', maxTemp: 32, minTemp: 25, conditionText: 'Heavy Thunderstorm', emoji: '⛈️', rainProbability: 70, stormStart: 13, stormEnd: 16 },
+      { dayLabel: 'Tomorrow', dateFormatted: 'Oct 21', maxTemp: 33, minTemp: 25, conditionText: 'Afternoon Storm', emoji: '⛈️', rainProbability: 75, stormStart: 13.5, stormEnd: 16 },
+      { dayLabel: 'Thu', dateFormatted: 'Oct 22', maxTemp: 33, minTemp: 25, conditionText: 'Heavy Thunderstorm', emoji: '⛈️', rainProbability: 70, stormStart: 14, stormEnd: 16.5 },
+      { dayLabel: 'Fri', dateFormatted: 'Oct 23', maxTemp: 29, minTemp: 24, conditionText: 'Monsoon Showers', emoji: '🌧️', rainProbability: 80, stormStart: 12.5, stormEnd: 16 },
+      { dayLabel: 'Sat', dateFormatted: 'Oct 24', maxTemp: 31, minTemp: 24, conditionText: 'Scattered Showers', emoji: '🌦️', rainProbability: 60, stormStart: 14, stormEnd: 16 },
+      { dayLabel: 'Sun', dateFormatted: 'Oct 25', maxTemp: 33, minTemp: 25, conditionText: 'Partly Sunny', emoji: '🌤️', rainProbability: 40, stormStart: 15, stormEnd: 17 },
+      { dayLabel: 'Mon', dateFormatted: 'Oct 26', maxTemp: 32, minTemp: 24, conditionText: 'Afternoon Rain', emoji: '⛈️', rainProbability: 65, stormStart: 13, stormEnd: 15.5 },
+    ];
+  }, [liveWeather]);
+
+  const activeForecastDay = dailyForecastList[selectedDayIndex] || dailyForecastList[0];
+
+  // Dynamic simulation for the chosen weather mode
+  const activeSimDay = useMemo(() => {
+    return simulateDay(site, simWeather, smart);
+  }, [site, simWeather, smart]);
+
+  // Daily Savings calculation for the Intelligent Power Planning tab
+  const dailySavings = useMemo(() => {
+    const baselineL = activeSimDay.loadKWh / GENSET_KWH_PER_L;
+    const avoidedL = Math.max(0, baselineL - activeSimDay.litres);
+    const savedRM = avoidedL * DIESEL_RM_PER_L;
+    const cleanShare = Math.round(((activeSimDay.loadKWh - activeSimDay.gensetKWh) / Math.max(1, activeSimDay.loadKWh)) * 100);
+    return {
+      avoidedL: Math.round(avoidedL),
+      savedRM: Math.round(savedRM),
+      cleanShare,
+    };
+  }, [activeSimDay]);
+
   const day = smart ? dSmart : plain;
   const now = day.hours[hour];
   const m = useMemo(() => monthly(site), [site]);
@@ -321,175 +360,383 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
       {/* TAB 3: INTELLIGENT POWER PLANNING */}
       {activeTab === 'weather' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Main Google Weather Intelligence Card */}
+          {/* Main Weather Card */}
           <section className="card" style={{ borderLeft: '4px solid #0F766E' }}>
-            {/* Top Bar */}
+            {/* Top Bar: Location Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F766E', background: '#F0FDFA', border: '1px solid #CCFBF1', padding: '3px 10px', borderRadius: 6 }}>
-                  📍 {liveWeather?.locationName || site.locationName || 'Klang Valley, Malaysia'}
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F766E', background: '#F0FDFA', border: '1px solid #CCFBF1', padding: '4px 12px', borderRadius: 6 }}>
+                  📍 {liveWeather?.locationName || site.locationName || 'Putra Heights, Klang Valley'}
                 </span>
-                <span style={{ fontSize: '11px', color: '#64748B' }}>
+                <span style={{ fontSize: '12px', color: '#64748B' }}>
                   ({site.lat ? `${site.lat.toFixed(3)}°N, ${site.lon.toFixed(3)}°E` : '3.003°N, 101.573°E'})
                 </span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: '11px', color: '#15803D', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5, background: '#F0FDF4', border: '1px solid #DCFCE7', padding: '3px 8px', borderRadius: 5 }}>
-                  <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#22C55E' }} />
-                  Google Weather API (Live)
+              <span style={{ fontSize: '12px', color: '#059669', fontWeight: 700, background: '#ECFDF5', border: '1px solid #A7F3D0', padding: '4px 12px', borderRadius: 6 }}>
+                ⚡ Automated Site Power Planning Active
+              </span>
+            </div>
+
+            {/* Weather Hero View (Clean Stacked Lines for Readability) */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 10, padding: '16px 20px', marginBottom: 16, flexWrap: 'wrap', gap: 16 }}>
+              {/* Left: Weather Icon & Stacked Lines */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 18 }}>
+                <span style={{ fontSize: '50px', lineHeight: 1, marginTop: 4 }}>{activeForecastDay.emoji || '⛈️'}</span>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
+                    <span style={{ fontSize: '38px', fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>
+                      {selectedDayIndex === 0 ? (liveWeather?.currentTemp || activeForecastDay.maxTemp) : activeForecastDay.maxTemp}
+                    </span>
+                    <span style={{ fontSize: '20px', fontWeight: 600, color: '#64748B' }}>°C</span>
+                    <span style={{ fontSize: '15px', fontWeight: 600, color: '#334155', marginLeft: 6 }}>
+                      ({activeForecastDay.conditionText})
+                    </span>
+                  </div>
+
+                  {/* Separate Stacked Lines */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: '13px', color: '#334155' }}>
+                    <div>
+                      <span style={{ color: '#64748B', fontWeight: 500 }}>Feels like: </span>
+                      <strong>{selectedDayIndex === 0 ? (liveWeather?.feelsLikeTemp || (activeForecastDay.maxTemp + 5)) : (activeForecastDay.maxTemp + 5)}°C</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#64748B', fontWeight: 500 }}>Chance of rain: </span>
+                      <strong style={{ color: activeForecastDay.rainProbability > 60 ? '#0284C7' : '#334155' }}>
+                        {activeForecastDay.rainProbability}%
+                      </strong>
+                      <span style={{ color: '#64748B', fontSize: '12px' }}>
+                        {' '}(Rain expected {activeForecastDay.stormStart || 13}:00 to {activeForecastDay.stormEnd || 16}:30)
+                      </span>
+                    </div>
+                    <div>
+                      <span style={{ color: '#64748B', fontWeight: 500 }}>Humidity: </span>
+                      <strong>{selectedDayIndex === 0 ? (liveWeather?.currentHumidity || 70) : 72}%</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#64748B', fontWeight: 500 }}>Wind speed: </span>
+                      <strong>{selectedDayIndex === 0 ? (liveWeather?.windSpeed || 8) : 9} km/h</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Selected Day Badge */}
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0F766E', fontWeight: 700 }}>
+                  Active Horizon
+                </div>
+                <div style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginTop: 2 }}>
+                  {activeForecastDay.dayLabel}
+                </div>
+                <div style={{ fontSize: '13px', color: '#64748B', marginTop: 2 }}>
+                  {activeForecastDay.dateFormatted}
+                </div>
+                <div style={{ marginTop: 8, fontSize: '11px', color: '#047857', fontWeight: 600, background: '#ECFDF5', border: '1px solid #A7F3D0', padding: '3px 8px', borderRadius: 4, display: 'inline-block' }}>
+                  Optimal Dispatch Plan
+                </div>
+              </div>
+            </div>
+
+            {/* 7-Day Forecast Row */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  7-Day Week Forecast (Click a day to view plan)
                 </span>
+                <span style={{ fontSize: '11px', color: '#0F766E', fontWeight: 600 }}>
+                  Day {selectedDayIndex + 1} of 7 Selected
+                </span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
+                {dailyForecastList.map((d, i) => {
+                  const isSelected = i === selectedDayIndex;
+                  return (
+                    <div
+                      key={d.dayLabel + i}
+                      onClick={() => setSelectedDayIndex(i)}
+                      style={{
+                        background: isSelected ? '#F0FDFA' : '#FFFFFF',
+                        border: isSelected ? '2px solid #0F766E' : '1px solid #CBD5E1',
+                        borderRadius: 8,
+                        padding: '10px 6px',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        boxShadow: isSelected ? '0 2px 8px rgba(15, 118, 110, 0.15)' : 'none',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: isSelected ? '#0F766E' : '#334155' }}>
+                        {d.dayLabel}
+                      </div>
+                      <div style={{ fontSize: '10px', color: '#64748B', marginBottom: 2 }}>
+                        {d.dateFormatted}
+                      </div>
+                      <div style={{ fontSize: '24px', margin: '4px 0' }}>{d.emoji || '⛈️'}</div>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>
+                        {d.maxTemp}° <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 500 }}>{d.minTemp}°</span>
+                      </div>
+                      <div style={{ fontSize: '10px', color: '#0284C7', fontWeight: 600, marginTop: 4 }}>
+                        {d.rainProbability}% rain
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 1-Click Weather Simulation Toggle (Addition 2) */}
+            <div style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: 8, padding: '12px 14px', marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: '#1E293B' }}>
+                  🌤️ Test Weather Simulation (Click to preview how power adjusts):
+                </span>
+                <span style={{ fontSize: '11px', color: '#64748B' }}>
+                  Active: <strong>{simWeather === 'sunny' ? 'Full Sun' : simWeather === 'monsoon' ? 'Heavy Rain' : 'Afternoon Storm'}</strong>
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <button
-                  id="open-google-weather-modal"
-                  onClick={() => {
-                    setGoogleKeyInput(getGoogleWeatherApiKey());
-                    setIsWeatherKeyModalOpen(true);
-                  }}
+                  type="button"
+                  onClick={() => setSimWeather('sunny')}
                   style={{
-                    fontSize: '11px',
-                    padding: '3px 8px',
-                    background: '#F8FAFC',
-                    border: '1px solid #CBD5E1',
-                    borderRadius: 5,
+                    flex: 1,
+                    minWidth: 140,
+                    padding: '8px 12px',
+                    borderRadius: 6,
+                    border: simWeather === 'sunny' ? '2px solid #D97706' : '1px solid #CBD5E1',
+                    background: simWeather === 'sunny' ? '#FEF3C7' : '#FFFFFF',
+                    color: simWeather === 'sunny' ? '#92400E' : '#334155',
+                    fontWeight: 700,
+                    fontSize: '12px',
                     cursor: 'pointer',
-                    color: '#475569',
-                    fontWeight: 600,
                   }}
-                  title="Configure Google Maps Weather API Key"
                 >
-                  ⚙️ Key
+                  ☀️ Normal Sun (Sunny)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSimWeather('storm')}
+                  style={{
+                    flex: 1,
+                    minWidth: 140,
+                    padding: '8px 12px',
+                    borderRadius: 6,
+                    border: simWeather === 'storm' ? '2px solid #0F766E' : '1px solid #CBD5E1',
+                    background: simWeather === 'storm' ? '#CCFBF1' : '#FFFFFF',
+                    color: simWeather === 'storm' ? '#0F766E' : '#334155',
+                    fontWeight: 700,
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  ⛈️ Afternoon Storm (Default)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSimWeather('monsoon')}
+                  style={{
+                    flex: 1,
+                    minWidth: 140,
+                    padding: '8px 12px',
+                    borderRadius: 6,
+                    border: simWeather === 'monsoon' ? '2px solid #2563EB' : '1px solid #CBD5E1',
+                    background: simWeather === 'monsoon' ? '#DBEAFE' : '#FFFFFF',
+                    color: simWeather === 'monsoon' ? '#1E40AF' : '#334155',
+                    fontWeight: 700,
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  🌧️ Rainy All Day (Monsoon)
                 </button>
               </div>
             </div>
 
-            {/* Google Weather Hero View (matches Google Search Weather Widget) */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 10, padding: '16px 20px', marginBottom: 14, flexWrap: 'wrap', gap: 16 }}>
-              {/* Left: Weather Icon, Temperature & Metrics */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                <span style={{ fontSize: '48px', lineHeight: 1 }}>{liveWeather?.emoji || '⛈️'}</span>
+            {/* Daily Money & Fuel Saved Box (Addition 1) */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Daily Site Savings for {activeForecastDay.dayLabel}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 8, padding: '12px 14px' }}>
+                  <div style={{ fontSize: '11px', color: '#166534', fontWeight: 600 }}>Diesel Saved Today</div>
+                  <div style={{ fontSize: '24px', fontWeight: 800, color: '#15803D', margin: '2px 0' }}>
+                    {dailySavings.avoidedL} <small style={{ fontSize: '14px' }}>Litres</small>
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#166534' }}>
+                    Avoided running dirty generator
+                  </div>
+                </div>
+                <div style={{ background: '#F0FDFA', border: '1px solid #99F6E4', borderRadius: 8, padding: '12px 14px' }}>
+                  <div style={{ fontSize: '11px', color: '#0F766E', fontWeight: 600 }}>Cash Saved Today</div>
+                  <div style={{ fontSize: '24px', fontWeight: 800, color: '#0F766E', margin: '2px 0' }}>
+                    RM {fmt(dailySavings.savedRM)}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#0F766E' }}>
+                    Based on RM 5.17 / L fuel price
+                  </div>
+                </div>
+                <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 8, padding: '12px 14px' }}>
+                  <div style={{ fontSize: '11px', color: '#1E40AF', fontWeight: 600 }}>Clean Energy Share</div>
+                  <div style={{ fontSize: '24px', fontWeight: 800, color: '#2563EB', margin: '2px 0' }}>
+                    {dailySavings.cleanShare}%
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#1E40AF' }}>
+                    Powered directly by sun & battery
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Standby Generator Status Badge (Addition 4) */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: '#ECFDF5',
+                border: '1px solid #A7F3D0',
+                borderRadius: 8,
+                padding: '12px 16px',
+                marginBottom: 16,
+                flexWrap: 'wrap',
+                gap: 10,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: '20px' }}>🟢</span>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                    <span style={{ fontSize: '38px', fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>
-                      {liveWeather?.currentTemp || 32}
-                    </span>
-                    <span style={{ fontSize: '18px', fontWeight: 600, color: '#64748B' }}>°C</span>
-                    {liveWeather?.feelsLikeTemp && (
-                      <span style={{ fontSize: '12px', color: '#64748B', marginLeft: 4 }}>
-                        (Feels like {liveWeather.feelsLikeTemp}°C)
-                      </span>
-                    )}
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#065F46' }}>
+                    Standby Generator: 100% OFF (Cold Standby) • 0 Litres Burned
                   </div>
-                  <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: '12px', color: '#475569', flexWrap: 'wrap' }}>
-                    <span>Precipitation: <strong>{liveWeather?.precipitationProb || 65}%</strong></span>
-                    <span>•</span>
-                    <span>Humidity: <strong>{liveWeather?.currentHumidity || 70}%</strong></span>
-                    <span>•</span>
-                    <span>Wind: <strong>{liveWeather?.windSpeed || 8} km/h</strong></span>
+                  <div style={{ fontSize: '12px', color: '#047857' }}>
+                    The diesel generator stays turned off. MegaBatt battery carries all crane and site loads.
                   </div>
                 </div>
               </div>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: '#047857', background: '#D1FAE5', padding: '4px 10px', borderRadius: 6 }}>
+                Zero Emissions
+              </span>
+            </div>
 
-              {/* Right: Condition & Day */}
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0F766E', fontWeight: 700 }}>
-                  Google Weather
+            {/* Equipment Charging Plan (Simple Words, NOT complex) */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Smart Equipment Charging Plan for {activeForecastDay.dayLabel}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                {/* Column 1: Charge on Sun */}
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                    <span style={{ fontSize: '14px' }}>🟢</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F766E' }}>Charge Now (Free Sun)</span>
+                  </div>
+                  <p style={{ fontSize: '11px', color: '#64748B', margin: '0 0 8px 0' }}>
+                    Plug in during morning and midday sun:
+                  </p>
+                  <ul style={{ margin: 0, paddingLeft: 18, fontSize: '12px', color: '#334155', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <li>EV Forklifts (8.5 kW)</li>
+                    <li>Scissor Lifts (4.0 kW)</li>
+                    <li>Hand Tools & Battery Packs (3.2 kW)</li>
+                    <li>Site Radios & Drones (1.5 kW)</li>
+                  </ul>
+                  <div style={{ marginTop: 8, fontSize: '11px', color: '#059669', fontWeight: 600 }}>
+                    ✓ 100% powered by free rooftop solar
+                  </div>
                 </div>
-                <div style={{ fontSize: '14px', fontWeight: 600, color: '#64748B', margin: '2px 0' }}>
-                  {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
+
+                {/* Column 2: Pause during Rain */}
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                    <span style={{ fontSize: '14px' }}>🔴</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#DC2626' }}>Pause During Rain</span>
+                  </div>
+                  <p style={{ fontSize: '11px', color: '#64748B', margin: '0 0 8px 0' }}>
+                    Pause during {activeForecastDay.stormStart || 13}:00 to {activeForecastDay.stormEnd || 16}:30:
+                  </p>
+                  <ul style={{ margin: 0, paddingLeft: 18, fontSize: '12px', color: '#334155', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <li>Secondary spare battery banks</li>
+                    <li>Heavy workshop heaters</li>
+                    <li>Welding training benches</li>
+                  </ul>
+                  <div style={{ marginTop: 8, fontSize: '11px', color: '#DC2626', fontWeight: 600 }}>
+                    ✓ Paused automatically to save power
+                  </div>
                 </div>
-                <div style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A' }}>
-                  {liveWeather?.conditionText || 'Heavy Thunderstorm'}
+
+                {/* Column 3: Heavy Machinery */}
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                    <span style={{ fontSize: '14px' }}>⚡</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#2563EB' }}>Always Powered</span>
+                  </div>
+                  <p style={{ fontSize: '11px', color: '#64748B', margin: '0 0 8px 0' }}>
+                    Zero interruptions, rain or shine:
+                  </p>
+                  <ul style={{ margin: 0, paddingLeft: 18, fontSize: '12px', color: '#334155', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <li>Main Tower Crane (45 kW)</li>
+                    <li>Passenger Hoist (22 kW)</li>
+                    <li>Water Discharge Pumps (15 kW)</li>
+                    <li>Worker CLQ Dorm Fans (4.2 kW)</li>
+                  </ul>
+                  <div style={{ marginTop: 8, fontSize: '11px', color: '#2563EB', fontWeight: 600 }}>
+                    ✓ Battery buffer guarantees no breaker trips
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* 5-Day Forecast Row (Daily forecast cards matching Google Weather) */}
-            <div style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                5-Day Hyperlocal Forecast (Google Weather)
+            {/* 3 Simple Rules for Site Supervisors Checklist (Addition 3) */}
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '14px 16px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F766E', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                📋 3 Simple Rules for Site Supervisors Today
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
-                {(liveWeather?.dailyForecast || [
-                  { dayLabel: 'Today', maxTemp: 32, minTemp: 25, conditionText: 'Heavy Thunderstorm', emoji: '⛈️', rainProbability: 70 },
-                  { dayLabel: 'Wed', maxTemp: 33, minTemp: 25, conditionText: 'Heavy Thunderstorm', emoji: '⛈️', rainProbability: 70 },
-                  { dayLabel: 'Thu', maxTemp: 33, minTemp: 25, conditionText: 'Heavy Thunderstorm', emoji: '⛈️', rainProbability: 70 },
-                  { dayLabel: 'Fri', maxTemp: 29, minTemp: 24, conditionText: 'Thunderstorm', emoji: '⛈️', rainProbability: 80 },
-                  { dayLabel: 'Sat', maxTemp: 29, minTemp: 24, conditionText: 'Scattered Thunderstorms', emoji: '⛈️', rainProbability: 60 },
-                ]).map((d, i) => (
-                  <div
-                    key={d.dayLabel}
-                    style={{
-                      background: i === 0 ? '#F0FDFA' : '#FFFFFF',
-                      border: `1px solid ${i === 0 ? '#99F6E4' : '#E2E8F0'}`,
-                      borderRadius: 8,
-                      padding: '10px 8px',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <div style={{ fontSize: '12px', fontWeight: 700, color: i === 0 ? '#0F766E' : '#334155' }}>
-                      {d.dayLabel}
-                    </div>
-                    <div style={{ fontSize: '24px', margin: '4px 0' }}>{d.emoji || '⛈️'}</div>
-                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>
-                      {d.maxTemp}° <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 500 }}>{d.minTemp}°</span>
-                    </div>
-                    <div style={{ fontSize: '10px', color: '#0284C7', fontWeight: 600, marginTop: 2 }}>
-                      {d.rainProbability}% rain
-                    </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <span style={{ fontSize: '16px' }}>1️⃣</span>
+                  <div style={{ fontSize: '12px', color: '#334155' }}>
+                    <strong>Morning (8:00 AM to 11:30 AM):</strong> Clean morning sunshine charges the battery up to 88%. Keep all routine equipment running normally.
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Intelligent Power Planning: Actionable Schedule Horizon */}
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Today's Site Power Dispatch Strategy (Based on Google Forecast)
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-                {(liveWeather?.timeline || [
-                  { period: '08:00 - 11:30', title: '🌤️ Morning Solar Harvest', action: 'BESS Pre-Charging', detail: 'Clean irradiance charges BESS to 88%', isStorm: false },
-                  { period: '11:30 - 13:30', title: '☀️ Midday Peak Sun', action: 'Run High-Draw Machinery', detail: 'Optimal window to charge EV forklifts on free solar', isStorm: false },
-                  { period: '13:00 - 15:30', title: '⛈️ Storm Window', action: 'Storm Buffer (70% Rain)', detail: 'Solar drops 80%. Battery buffer carries cranes', isStorm: true },
-                  { period: '17:00 - 07:00', title: '⛅ Evening & Night Shift', action: 'CLQ Living Dignity', detail: 'Stored battery powers 24/7 worker fans & lighting', isStorm: false },
-                ]).map((t) => (
-                  <div
-                    key={t.period}
-                    style={{
-                      background: t.isStorm ? '#FEF2F2' : '#F8FAFC',
-                      border: `1px solid ${t.isStorm ? '#FECACA' : '#E2E8F0'}`,
-                      borderRadius: 8,
-                      padding: '10px 12px',
-                    }}
-                  >
-                    <div style={{ fontSize: '10px', color: t.isStorm ? '#991B1B' : '#64748B', fontWeight: 600 }}>{t.period}</div>
-                    <div style={{ fontSize: '13px', fontWeight: 700, margin: '2px 0', color: t.isStorm ? '#991B1B' : '#0F172A' }}>{t.title}</div>
-                    <div style={{ fontSize: '11px', color: t.isStorm ? '#DC2626' : '#0F766E', fontWeight: 700, marginBottom: 2 }}>{t.action}</div>
-                    <div style={{ fontSize: '11px', color: '#64748B', lineHeight: 1.3 }}>{t.detail}</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <span style={{ fontSize: '16px' }}>2️⃣</span>
+                  <div style={{ fontSize: '12px', color: '#334155' }}>
+                    <strong>Midday (11:30 AM to 1:30 PM):</strong> Solar is at peak strength. Best time to plug in and recharge electric forklifts and power tools on free sun energy.
                   </div>
-                ))}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <span style={{ fontSize: '16px' }}>3️⃣</span>
+                  <div style={{ fontSize: '12px', color: '#334155' }}>
+                    <strong>Afternoon Rain ({activeForecastDay.stormStart || 13}:00 to {activeForecastDay.stormEnd || 16}:30):</strong> Rain clouds will cut solar. The battery buffer carries tower cranes and hoists safely. Leave the backup diesel generator off.
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div style={{ fontSize: '12px', color: '#0F766E', background: '#F0FDFA', border: '1px solid #CCFBF1', borderRadius: 6, padding: '8px 12px' }}>
-              ⚡ <strong>Automated Battery Strategy:</strong> Google Weather API forecasts afternoon convective rain ({liveWeather?.stormWindow || '13:00 - 15:30'}). GreenPulse pre-charges the battery to 88% during morning sunshine so tower cranes, passenger hoists, and pumps operate continuously with zero diesel generator starts.
             </div>
           </section>
 
           {/* Interactive 24-Hour Power Chart */}
           <section className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: '16px' }}>Today's 24-Hour Power Schedule</h2>
+                <h2 style={{ margin: 0, fontSize: '16px' }}>
+                  24-Hour Site Power Schedule ({simWeather === 'sunny' ? 'Sunny Weather' : simWeather === 'monsoon' ? 'Rainy Day' : 'Afternoon Storm'})
+                </h2>
                 <p className="sub" style={{ margin: '2px 0 0 0', fontSize: '12px' }}>
-                  Interactive dispatch simulation: hover or click along the timeline to inspect hourly solar, battery, and site load flow.
+                  Interactive dispatch simulation: click or hover along the hours to inspect solar generation, battery buffer, and site equipment load.
                 </p>
               </div>
             </div>
             <DayChart
-              hours={day.hours}
+              hours={activeSimDay.hours}
               now={null}
-              stormWindow={{ from: liveWeather?.stormStart || 13, to: liveWeather?.stormEnd || 15.5, label: `Rain (${liveWeather?.stormWindow || 'Storm Window'})` }}
+              stormWindow={simWeather === 'storm' ? { from: activeForecastDay.stormStart || 13, to: activeForecastDay.stormEnd || 16, label: `Rain (${activeForecastDay.stormStart || 13}:00 to ${activeForecastDay.stormEnd || 16}:30)` } : null}
             />
+            <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: '12px', color: '#64748B', flexWrap: 'wrap', padding: '8px 12px', background: '#F8FAFC', borderRadius: 6, border: '1px solid #E2E8F0' }}>
+              <span>☀️ <strong>Yellow:</strong> Free Solar Power</span>
+              <span>🔋 <strong>Green:</strong> Stored Battery Energy</span>
+              <span>🌧️ <strong>Blue Shaded Area:</strong> Afternoon Rain Window</span>
+              <span>⛽ <strong>Genset:</strong> 0 kW (100% OFF)</span>
+            </div>
           </section>
         </div>
       )}
