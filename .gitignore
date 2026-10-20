@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+prototype/node_modules/
+
+# Production build
+dist/
+prototype/dist/
+dist-ssr/
+
+# Local env & config
+*.local
+.env
+prototype/.env
+.vercel/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Editor directories
+.vscode/
+.idea/
+.DS_Store
