@@ -12,7 +12,6 @@ export default function Shell({
   tabs = [],
   activeTab,
   onTabChange,
-  pills = [],
   onLogout,
   children,
 }) {
@@ -132,7 +131,7 @@ export default function Shell({
           </div>
         ) : (
           <div>
-            <div className="side-label">Portfolio Scope</div>
+            <div className="side-label">Portfolio Overview</div>
             <div className="pill">
               <span>All Townships</span>
               <b>{sites.length} BESS Units</b>
@@ -191,27 +190,6 @@ export default function Shell({
             })}
           </div>
         </nav>
-
-        {/* Live Telemetry Status Pills */}
-        <div>
-          <div className="side-label">Live Site Telemetry</div>
-          <div className="pills">
-            {pills.map((p) => {
-              const isSoc = p.k === 'Battery SoC';
-              return (
-                <div className="pill" key={p.k}>
-                  <span>{p.k}</span>
-                  <b
-                    className={p.tone}
-                    style={isSoc ? { color: '#F07A2A' } : undefined}
-                  >
-                    {p.v}
-                  </b>
-                </div>
-              );
-            })}
-          </div>
-        </div>
 
         {/* User Role Card & Logout */}
         <div className="side-user">

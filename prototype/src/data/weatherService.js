@@ -101,8 +101,17 @@ async function fetchFromGoogleWeatherApi(lat, lon, apiKey) {
       }
     }
 
-    // Parse 5-Day Daily Forecast from Google and extend to full 7-day week
-    const dailyForecast = (fcDData?.forecastDays || []).map((fd, idx) => {
+    // Parse Daily Forecast from Google and filter to ensure Day 0 is Today in local time
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+
+    const validGoogleDays = (fcDData?.forecastDays || []).filter((fd) => {
+      const dateObj = new Date(fd.displayDate.year, fd.displayDate.month - 1, fd.displayDate.day);
+      dateObj.setHours(0, 0, 0, 0);
+      return dateObj.getTime() >= todayMidnight.getTime();
+    });
+
+    const dailyForecast = validGoogleDays.map((fd, idx) => {
       const dateObj = new Date(fd.displayDate.year, fd.displayDate.month - 1, fd.displayDate.day);
       const isToday = idx === 0;
       const isTomorrow = idx === 1;
@@ -166,6 +175,9 @@ async function fetchFromGoogleWeatherApi(lat, lon, apiKey) {
       maxRainProb: Math.max(maxRainProb, 70),
       morningTemp,
       dailyForecast,
+      temp: currentTemp,
+      condition: conditionText,
+      location: 'Klang Valley, Malaysia',
     };
   } catch (err) {
     clearTimeout(timeoutId);
@@ -212,26 +224,64 @@ async function fetchFromLiveMeteoApi(lat, lon) {
   const dailyRains = data.daily?.precipitation_probability_max || [];
   const dailyCodes = data.daily?.weather_code || [];
 
-  const dailyForecast = dailyDates.slice(0, 7).map((dateStr, idx) => {
+  const todayMidnight = new Date();
+  todayMidnight.setHours(0, 0, 0, 0);
+
+  const parsedMeteoDays = [];
+  dailyDates.forEach((dateStr, idx) => {
     const [y, m, d] = dateStr.split('-').map(Number);
     const dateObj = new Date(y, m - 1, d);
+    dateObj.setHours(0, 0, 0, 0);
+    if (dateObj.getTime() >= todayMidnight.getTime()) {
+      parsedMeteoDays.push({
+        dateObj,
+        maxTemp: Math.round(dailyMaxs[idx] || 32),
+        minTemp: Math.round(dailyMins[idx] || 25),
+        rain: Math.max(dailyRains[idx] || 60, 55),
+        code: dailyCodes[idx] || 95,
+      });
+    }
+  });
+
+  const dailyForecast = parsedMeteoDays.slice(0, 7).map((dayItem, idx) => {
     const isToday = idx === 0;
     const isTomorrow = idx === 1;
-    const dayLabel = isToday ? 'Today' : isTomorrow ? 'Tomorrow' : dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-    const dayCond = getWmoCondition(dailyCodes[idx] || 95);
+    const dayLabel = isToday ? 'Today' : isTomorrow ? 'Tomorrow' : dayItem.dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+    const dayCond = getWmoCondition(dayItem.code);
     return {
       dayLabel,
-      dateFormatted: dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      maxTemp: Math.round(dailyMaxs[idx] || 32),
-      minTemp: Math.round(dailyMins[idx] || 25),
+      dateFormatted: dayItem.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      maxTemp: dayItem.maxTemp,
+      minTemp: dayItem.minTemp,
       conditionText: dayCond.text,
       conditionType: dayCond.type,
       emoji: getWeatherEmoji(dayCond.type, dayCond.text),
-      rainProbability: Math.max(dailyRains[idx] || 60, 55),
+      rainProbability: dayItem.rain,
       stormStart: idx === 0 ? stormStart : (13 + (idx % 2)),
       stormEnd: idx === 0 ? stormEnd : (16 + (idx % 2)),
     };
   });
+
+  // Ensure 7 days
+  while (dailyForecast.length < 7) {
+    const offset = dailyForecast.length;
+    const nextDate = new Date();
+    nextDate.setDate(nextDate.getDate() + offset);
+    const isTomorrow = offset === 1;
+    const dayLabel = isTomorrow ? 'Tomorrow' : nextDate.toLocaleDateString('en-US', { weekday: 'short' });
+    dailyForecast.push({
+      dayLabel,
+      dateFormatted: nextDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      maxTemp: 31,
+      minTemp: 24,
+      conditionText: 'Scattered Showers',
+      conditionType: 'RAIN',
+      emoji: '🌦️',
+      rainProbability: 60,
+      stormStart: 13.5,
+      stormEnd: 16,
+    });
+  }
 
   return {
     currentTemp,
@@ -247,6 +297,9 @@ async function fetchFromLiveMeteoApi(lat, lon) {
     maxRainProb: Math.max(maxRainProb, 70),
     morningTemp: hourly?.temperature_2m?.[9] || 28,
     dailyForecast,
+    temp: currentTemp,
+    condition: cond.text,
+    location: 'Klang Valley, Malaysia',
   };
 }
 
@@ -280,6 +333,9 @@ export async function fetchLiveSiteWeather(site) {
         stormProbability: googleResult.maxRainProb,
         radarSource: 'Google Maps Platform Weather API',
         dailyForecast: googleResult.dailyForecast,
+        temp: googleResult.currentTemp,
+        condition: googleResult.conditionText,
+        location: locName,
         timeline: [
           {
             period: '08:00 - 11:30',
@@ -331,6 +387,9 @@ export async function fetchLiveSiteWeather(site) {
       conditionText: meteoResult.conditionText,
       conditionType: meteoResult.conditionType,
       emoji: meteoResult.emoji,
+      temp: meteoResult.currentTemp,
+      condition: meteoResult.conditionText,
+      location: locName,
       stormStart: meteoResult.stormStart,
       stormEnd: meteoResult.stormEnd,
       stormWindow: `${meteoResult.stormStart}:00 - ${meteoResult.stormEnd}:30`,
@@ -369,6 +428,25 @@ export async function fetchLiveSiteWeather(site) {
       ],
     };
   } catch (err) {
+    const fallbackDays = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      const dayLabel = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short' });
+      fallbackDays.push({
+        dayLabel,
+        dateFormatted: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        maxTemp: 32 - (i % 2),
+        minTemp: 24,
+        conditionText: i % 2 === 0 ? 'Heavy Thunderstorm' : 'Afternoon Storm',
+        conditionType: 'THUNDERSTORM',
+        emoji: '⛈️',
+        rainProbability: 70 - (i % 3) * 5,
+        stormStart: 13,
+        stormEnd: 16,
+      });
+    }
+
     return {
       isLive: false,
       apiProvider: 'baseline',
@@ -383,20 +461,15 @@ export async function fetchLiveSiteWeather(site) {
       conditionText: 'Heavy Thunderstorm',
       conditionType: 'HEAVY_THUNDERSTORM',
       emoji: '⛈️',
+      temp: 32,
+      condition: 'Heavy Thunderstorm',
+      location: locName,
       stormStart: 13,
       stormEnd: 16,
       stormWindow: '13:00 - 16:00',
       stormProbability: 75,
       radarSource: 'Google Weather Meteorological Baseline',
-      dailyForecast: [
-        { dayLabel: 'Today', dateFormatted: 'Oct 20', maxTemp: 32, minTemp: 25, conditionText: 'Heavy Thunderstorm', emoji: '⛈️', rainProbability: 70, stormStart: 13, stormEnd: 16 },
-        { dayLabel: 'Tomorrow', dateFormatted: 'Oct 21', maxTemp: 33, minTemp: 25, conditionText: 'Afternoon Storm', emoji: '⛈️', rainProbability: 75, stormStart: 13.5, stormEnd: 16 },
-        { dayLabel: 'Thu', dateFormatted: 'Oct 22', maxTemp: 33, minTemp: 25, conditionText: 'Heavy Thunderstorm', emoji: '⛈️', rainProbability: 70, stormStart: 14, stormEnd: 16.5 },
-        { dayLabel: 'Fri', dateFormatted: 'Oct 23', maxTemp: 29, minTemp: 24, conditionText: 'Monsoon Showers', emoji: '🌧️', rainProbability: 80, stormStart: 12.5, stormEnd: 16 },
-        { dayLabel: 'Sat', dateFormatted: 'Oct 24', maxTemp: 31, minTemp: 24, conditionText: 'Scattered Showers', emoji: '🌦️', rainProbability: 60, stormStart: 14, stormEnd: 16 },
-        { dayLabel: 'Sun', dateFormatted: 'Oct 25', maxTemp: 33, minTemp: 25, conditionText: 'Partly Sunny', emoji: '🌤️', rainProbability: 40, stormStart: 15, stormEnd: 17 },
-        { dayLabel: 'Mon', dateFormatted: 'Oct 26', maxTemp: 32, minTemp: 24, conditionText: 'Afternoon Rain', emoji: '⛈️', rainProbability: 65, stormStart: 13, stormEnd: 15.5 },
-      ],
+      dailyForecast: fallbackDays,
       timeline: [
         {
           period: '08:00 - 11:30',

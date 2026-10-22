@@ -3,12 +3,23 @@ import Shell from '../components/Shell';
 import { LineLimit } from '../components/Charts';
 import { SITES } from '../data/sites';
 import { limitAt, noiseDay, status } from '../data/noise';
+import imgSiltTrap from '../assets/silt_trap.jpg';
+import imgWheelWash from '../assets/wheel_wash.jpg';
+import imgSiltFence from '../assets/silt_fence.jpg';
+import imgFuelBund from '../assets/fuel_bund.jpg';
 
 const TABS = [
   { id: 'water', label: 'Rain & Silt Runoff', icon: '🌧️' },
   { id: 'noise', label: 'Noise & Dust Limits', icon: '🔊' },
   { id: 'checklist', label: 'Daily Site Checklist & Photos', icon: '📋' },
   { id: 'complaints', label: 'Complaints & Actions', icon: '📢' },
+];
+
+export const SAMPLE_PHOTOS = [
+  { name: 'silt_trap_north.jpg', label: 'Silt Trap', url: imgSiltTrap },
+  { name: 'wheel_wash_exit.jpg', label: 'Wheel Wash', url: imgWheelWash },
+  { name: 'silt_fence_slope.jpg', label: 'Silt Fence', url: imgSiltFence },
+  { name: 'fuel_bund_secure.jpg', label: 'Chemical Bund', url: imgFuelBund },
 ];
 
 const INITIAL_CHECKLIST = [
@@ -20,6 +31,7 @@ const INITIAL_CHECKLIST = [
     note: 'Silt traps desilted yesterday. Flow clear and unobstructed.',
     photoName: 'silt_trap_north.jpg',
     photoTime: 'Today 08:30 AM',
+    photoUrl: imgSiltTrap,
   },
   {
     id: 2,
@@ -29,6 +41,7 @@ const INITIAL_CHECKLIST = [
     note: 'Silt fences upright, tightly staked with no tears.',
     photoName: 'silt_fence_slope.jpg',
     photoTime: 'Today 08:45 AM',
+    photoUrl: imgSiltFence,
   },
   {
     id: 3,
@@ -38,6 +51,7 @@ const INITIAL_CHECKLIST = [
     note: 'Double containment bunding dry and sealed. Zero fuel spills.',
     photoName: 'fuel_bund_secure.jpg',
     photoTime: 'Today 09:10 AM',
+    photoUrl: imgFuelBund,
   },
   {
     id: 4,
@@ -47,6 +61,7 @@ const INITIAL_CHECKLIST = [
     note: 'High-pressure wash bay running. Water sprayed on access road.',
     photoName: 'wheel_wash_exit.jpg',
     photoTime: 'Today 09:30 AM',
+    photoUrl: imgWheelWash,
   },
   {
     id: 5,
@@ -56,6 +71,7 @@ const INITIAL_CHECKLIST = [
     note: 'Scrap timber and metal sorted in bins. Zero open burning.',
     photoName: 'waste_segregation.jpg',
     photoTime: 'Today 09:45 AM',
+    photoUrl: imgFuelBund,
   },
 ];
 
@@ -106,11 +122,33 @@ export default function EoScreen({
   const [alertThreshold, setAlertThreshold] = useState(58);
   const [alertDispatched, setAlertDispatched] = useState(false);
   const [isAddChecklistOpen, setIsAddChecklistOpen] = useState(false);
-  const [newItem, setNewItem] = useState({ title: '', location: '', note: '' });
+  const [viewingPhotoItem, setViewingPhotoItem] = useState(null);
+  const [newItem, setNewItem] = useState({
+    title: '',
+    location: '',
+    note: '',
+    photoName: '',
+    photoUrl: null,
+  });
   const [isAddComplaintOpen, setIsAddComplaintOpen] = useState(false);
   const [newComplaint, setNewComplaint] = useState({ who: '', issue: '', action: '' });
   const [resolvingId, setResolvingId] = useState(null);
   const [resolveText, setResolveText] = useState('');
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setNewItem((prev) => ({
+          ...prev,
+          photoUrl: event.target.result,
+          photoName: file.name,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const site = sites.find((s) => s.id === siteId) || sites[0];
   const noiseProfile = useMemo(() => noiseDay(site, Array.from({ length: 24 }, (_, h) => ({ h, load: 50, genset: 0 })), false), [site]);
@@ -126,20 +164,12 @@ export default function EoScreen({
     before: noiseWithGenset[i].db,
   }));
 
-  const pills = [
-    { k: 'Boundary Noise', v: `${currentNoise.toFixed(2)} dBA`, tone: noiseTone === 'ok' ? 'ok' : 'warn' },
-    { k: 'DOE Day Limit', v: `${currentLimit.l90}.00 dBA` },
-    { k: 'Silt Turbidity', v: '18.20 NTU (<50)', tone: 'ok' },
-    { k: 'Site Checklist', v: `${checklist.filter((c) => c.status === 'pass').length}/${checklist.length} Passed`, tone: 'ok' },
-  ];
-
   const toggleChecklistStatus = (id) => {
-    setChecklist(checklist.map((item) => {
-      if (item.id === id) {
-        return { ...item, status: item.status === 'pass' ? 'action' : 'pass' };
-      }
-      return item;
-    }));
+    setChecklist(
+      checklist.map((item) =>
+        item.id === id ? { ...item, status: item.status === 'pass' ? 'action' : 'pass' } : item
+      )
+    );
   };
 
   const handleAddChecklistItem = (e) => {
@@ -151,11 +181,12 @@ export default function EoScreen({
       location: newItem.location || 'Site Perimeter',
       status: 'pass',
       note: newItem.note || 'Inspected and verified compliant.',
-      photoName: 'site_photo_' + Date.now().toString().slice(-4) + '.jpg',
+      photoName: newItem.photoName || ('site_photo_' + Date.now().toString().slice(-4) + '.jpg'),
       photoTime: 'Today ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      photoUrl: newItem.photoUrl || null,
     };
-    setChecklist([...checklist, item]);
-    setNewItem({ title: '', location: '', note: '' });
+    setChecklist([item, ...checklist]);
+    setNewItem({ title: '', location: '', note: '', photoName: '', photoUrl: null });
     setIsAddChecklistOpen(false);
   };
 
@@ -177,12 +208,11 @@ export default function EoScreen({
 
   const handleResolveComplaint = (id) => {
     if (!resolveText) return;
-    setComplaints(complaints.map((c) => {
-      if (c.id === id) {
-        return { ...c, action: resolveText, closed: true };
-      }
-      return c;
-    }));
+    setComplaints(
+      complaints.map((c) =>
+        c.id === id ? { ...c, action: resolveText, closed: true } : c
+      )
+    );
     setResolvingId(null);
     setResolveText('');
   };
@@ -190,7 +220,7 @@ export default function EoScreen({
   return (
     <Shell
       user={user}
-      area="Environmental Governance"
+      area="Environmental Management"
       siteId={siteId}
       onSite={setSiteId}
       showSites
@@ -198,35 +228,23 @@ export default function EoScreen({
       tabs={TABS}
       activeTab={activeTab}
       onTabChange={setActiveTab}
-      pills={pills}
       onLogout={onLogout}
     >
       {/* Top Header */}
       <div className="top">
         <div>
-          <h1>{site.name}: Environmental Compliance</h1>
+          <h1>{site.name}: Environmental Monitoring</h1>
           <p>
-            On-Site Environmental Officer Dashboard | Erosion Control, DOE Schedule 6 & Site Audits
-          </p>
+            Site dashboard for water quality, erosion control, and environmental inspections.          </p>
         </div>
         <div className="top-meta">
           <button id="open-emp-modal" className="btn btn-primary" onClick={() => setShowReportModal(true)}>
-            📋 Export Monthly Environmental Report
+            📋 Export Monthly Report
           </button>
         </div>
       </div>
 
-      {/* Quick Compliance Banner */}
-      <div className={`banner ${noiseTone === 'ok' ? 'ok' : 'near'}`} style={{ marginBottom: 16 }}>
-        <span>
-          {noiseTone === 'ok'
-            ? '🟢 100% STATUTORY COMPLIANCE: Water runoff, boundary noise, and dust within legal limits.'
-            : '⚠️ ATTENTION: Sound level near limit. Check heavy lifting machinery.'}
-        </span>
-        <span className="num">
-          Site Checked at {String(hour).padStart(2, '0')}:00
-        </span>
-      </div>
+
 
       {/* TAB 1: RAIN & SILT RUNOFF (ESC CONTROL) */}
       {activeTab === 'water' && (
@@ -238,7 +256,7 @@ export default function EoScreen({
               <div className="value num" style={{ color: '#059669' }}>
                 18.20<small> NTU</small>
               </div>
-              <div className="foot">DOE Limit: &lt; 50.00 NTU (Safe for discharge)</div>
+              <div className="foot">Within limit (50 NTU)</div>
             </div>
 
             <div className="card kpi">
@@ -246,7 +264,7 @@ export default function EoScreen({
               <div className="value num" style={{ color: '#059669' }}>
                 7.40<small> pH</small>
               </div>
-              <div className="foot">Neutral water (Statutory range: 6.00 to 9.00 pH)</div>
+              <div className="foot">Within range (6.0–9.0)</div>
             </div>
 
             <div className="card kpi">
@@ -254,7 +272,7 @@ export default function EoScreen({
               <div className="value num" style={{ color: '#059669' }}>
                 24.50<small> mg/L</small>
               </div>
-              <div className="foot">Statutory Limit: &lt; 50.00 mg/L (No muddy runoff)</div>
+              <div className="foot">Within limit (50 mg/L)</div>
             </div>
           </section>
 
@@ -263,15 +281,9 @@ export default function EoScreen({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: '15px', color: '#0369A1' }}>
-                  ⛈️ Heavy Rain Early Warning: Rain Expected 13:30 to 16:30
+                  ⛈️ Heavy Rain Warning: Rain Expected 13:30 to 16:30
                 </h3>
-                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#334155' }}>
-                  Pre-storm protocol: Inspect silt traps, clear perimeter drain blockages, and ensure geotextile fences are securely staked before downpour.
-                </p>
               </div>
-              <span style={{ fontSize: '12px', fontWeight: 700, background: '#E0F2FE', color: '#0369A1', padding: '4px 10px', borderRadius: 6 }}>
-                60% Rain Risk
-              </span>
             </div>
           </div>
 
@@ -286,8 +298,7 @@ export default function EoScreen({
                     <th style={{ padding: '8px' }}>Turbidity</th>
                     <th style={{ padding: '8px' }}>TSS</th>
                     <th style={{ padding: '8px' }}>pH</th>
-                    <th style={{ padding: '8px' }}>Legal Limit</th>
-                    <th style={{ padding: '8px' }}>Condition</th>
+                    <th style={{ padding: '8px' }}>Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -297,7 +308,6 @@ export default function EoScreen({
                       <td style={{ padding: '10px 8px', fontWeight: 700, color: '#059669' }}>{dp.turbidity.toFixed(2)} NTU</td>
                       <td style={{ padding: '10px 8px' }}>{dp.tss.toFixed(2)} mg/L</td>
                       <td style={{ padding: '10px 8px' }}>{dp.ph.toFixed(2)}</td>
-                      <td style={{ padding: '10px 8px', color: '#64748B' }}>{dp.limit}</td>
                       <td style={{ padding: '10px 8px' }}>
                         <span className="tag ok">Normal</span>
                       </td>
@@ -316,27 +326,27 @@ export default function EoScreen({
           {/* Noise & Dust KPIs */}
           <section className="grid g3">
             <div className="card kpi hero">
-              <div className="label">Boundary Sound Level</div>
+              <div className="label">Boundary Noise</div>
               <div className="value num" style={{ color: noiseTone === 'ok' ? '#059669' : '#D97706' }}>
                 {currentNoise.toFixed(2)}<small> dBA</small>
               </div>
-              <div className="foot">DOE Schedule 6 Limit: {currentLimit.l90}.00 dBA L90</div>
+              <div className="foot">Below the 60 dBA limit</div>
             </div>
 
             <div className="card kpi">
-              <div className="label">Ambient Dust Level (PM10)</div>
+              <div className="label">Dust Level (PM10)</div>
               <div className="value num" style={{ color: '#059669' }}>
                 22.50<small> µg/m³</small>
               </div>
-              <div className="foot">Clean air (DOE Limit: &lt; 150.00 µg/m³)</div>
+              <div className="foot">Within limit (150 µg/m³)</div>
             </div>
 
             <div className="card kpi">
-              <div className="label">Diesel Generator Smoke & Hum</div>
+              <div className="label">Diesel Generator</div>
               <div className="value num" style={{ color: '#059669' }}>
                 100% OFF
               </div>
-              <div className="foot">Zero dark smoke, zero nighttime engine drone</div>
+              <div className="foot">No smoke or engine noise</div>
             </div>
           </section>
 
@@ -344,9 +354,10 @@ export default function EoScreen({
           <div className="card" style={{ borderLeft: '4px solid #0F766E' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, flexWrap: 'wrap', gap: 10 }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '14px', color: '#0F172A' }}>Foreman Early Warning Sound Limit</h3>
+                <h3 style={{ margin: 0, fontSize: '14px', color: '#0F172A' }}>Noise Limit Alert</h3>
                 <p className="sub" style={{ margin: '2px 0 0 0', fontSize: '12px' }}>
-                  Sends an automatic alert to site supervisors before reaching the legal limit of {currentLimit.l90}.00 dBA.
+                  Alerts site supervisors when noise levels approach the legal limit.
+
                 </p>
               </div>
               <b className="num" style={{ color: '#0F766E', fontSize: '15px' }}>
@@ -371,7 +382,7 @@ export default function EoScreen({
                 onClick={() => setAlertDispatched(true)}
                 style={{ fontSize: '12px', padding: '6px 12px', whiteSpace: 'nowrap' }}
               >
-                📱 Send Test Alert
+                📱 Send Alert
               </button>
             </div>
 
@@ -390,9 +401,9 @@ export default function EoScreen({
             </p>
             <LineLimit points={chartPoints} limitAt={(p, i) => limitAt(i).l90} label="24-Hour Sound Level Profile" />
             <div className="legend" style={{ marginTop: 12 }}>
-              <span><i style={{ background: 'var(--green)' }} />With BESS & Solar</span>
-              <span><i style={{ background: '#94a3b8' }} />Old Diesel Generator Baseline</span>
-              <span><i style={{ background: 'var(--danger)', height: 2 }} />DOE Statutory Limit (Schedule 6)</span>
+              <span><i style={{ background: 'var(--green)' }} />Battery and solar power</span>
+              <span><i style={{ background: '#94a3b8' }} />Diesel Generator Baseline</span>
+              <span><i style={{ background: 'var(--danger)', height: 2 }} />Legal Noise Limit</span>
             </div>
           </section>
         </div>
@@ -404,10 +415,9 @@ export default function EoScreen({
           <section className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: '16px' }}>Daily Environmental Inspection Checklist</h2>
+                <h2 style={{ margin: 0, fontSize: '16px' }}>Daily Environmental Checklist</h2>
                 <p className="sub" style={{ margin: '2px 0 0 0', fontSize: '12px' }}>
-                  Inspection records required daily by Department of Environment (JAS) and client audits.
-                </p>
+                  Daily inspection records for DOE (JAS) and client audits.                </p>
               </div>
               <button
                 id="add-checklist-item-btn"
@@ -435,32 +445,95 @@ export default function EoScreen({
                     gap: 12,
                   }}
                 >
-                  <div style={{ flex: 1, minWidth: 240 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A' }}>
-                        {item.title}
-                      </span>
-                      <span style={{ fontSize: '11px', color: '#64748B', background: '#E2E8F0', padding: '1px 6px', borderRadius: 4 }}>
-                        {item.location}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#475569', lineHeight: 1.4 }}>
-                      {item.note}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1, minWidth: 260 }}>
+                    {/* Clickable Photo Thumbnail */}
+                    {item.photoUrl && (
+                      <div
+                        onClick={() => setViewingPhotoItem(item)}
+                        style={{
+                          width: 58,
+                          height: 58,
+                          borderRadius: 8,
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          position: 'relative',
+                          flexShrink: 0,
+                          border: '1.5px solid #CBD5E1',
+                          boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                          transition: 'transform 0.15s ease, border-color 0.15s ease',
+                        }}
+                        title="Click to view full photo evidence"
+                      >
+                        <img
+                          src={item.photoUrl}
+                          alt={item.title}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            background: 'rgba(15, 23, 42, 0.75)',
+                            color: '#FFFFFF',
+                            fontSize: '9px',
+                            textAlign: 'center',
+                            padding: '1px 0',
+                            fontWeight: 700,
+                            letterSpacing: '0.02em',
+                          }}
+                        >
+                          🔍 View
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A' }}>
+                          {item.title}
+                        </span>
+                        <span style={{ fontSize: '11px', color: '#64748B', background: '#E2E8F0', padding: '1px 6px', borderRadius: 4 }}>
+                          {item.location}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#475569', lineHeight: 1.4 }}>
+                        {item.note}
+                      </div>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '12px', color: '#0284C7', background: '#E0F2FE', padding: '4px 8px', borderRadius: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <button
+                      type="button"
+                      onClick={() => setViewingPhotoItem(item)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        fontSize: '12px',
+                        color: '#0284C7',
+                        background: '#E0F2FE',
+                        padding: '6px 10px',
+                        borderRadius: 6,
+                        border: '1px solid #BAE6FD',
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                        transition: 'background 0.15s ease',
+                      }}
+                      title="Click to preview inspection photo"
+                    >
                       <span>📷</span>
                       <span style={{ fontWeight: 600 }}>{item.photoName}</span>
                       <span style={{ fontSize: '10px', color: '#0369A1' }}>({item.photoTime})</span>
-                    </div>
+                    </button>
 
                     <button
                       type="button"
                       onClick={() => toggleChecklistStatus(item.id)}
                       style={{
-                        padding: '4px 10px',
+                        padding: '6px 12px',
                         borderRadius: 6,
                         border: 'none',
                         fontWeight: 700,
@@ -486,10 +559,7 @@ export default function EoScreen({
           <section className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: '16px' }}>Complaints & Corrective Actions (Aduan & Tindakan Pembetulan)</h2>
-                <p className="sub" style={{ margin: '2px 0 0 0', fontSize: '12px' }}>
-                  Log of community feedback, resident inquiries, and immediate site rectifications.
-                </p>
+                <h2 style={{ margin: 0, fontSize: '16px' }}>Community Feedback & Actions</h2>
               </div>
               <button
                 id="add-complaint-btn"
@@ -574,9 +644,9 @@ export default function EoScreen({
       {/* Add Checklist Modal */}
       {isAddChecklistOpen && (
         <div className="modal-backdrop" onClick={() => setIsAddChecklistOpen(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 460 }}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
             <div className="modal-header">
-              <h2 style={{ fontSize: '16px' }}>Add Inspection Item & Photo</h2>
+              <h2 style={{ fontSize: '16px' }}>Add Inspection Item & Photo Evidence</h2>
               <button className="btn btn-ghost" onClick={() => setIsAddChecklistOpen(false)}>✕</button>
             </div>
             <form onSubmit={handleAddChecklistItem}>
@@ -611,12 +681,82 @@ export default function EoScreen({
                     Inspection Observation Notes
                   </label>
                   <textarea
-                    rows={3}
+                    rows={2}
                     placeholder="e.g. Silt trap cleaned, zero mud leakage observed."
                     value={newItem.note}
                     onChange={(e) => setNewItem({ ...newItem, note: e.target.value })}
                     style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #CBD5E1', fontSize: '13px' }}
                   />
+                </div>
+
+                {/* Photo Upload from Device Only */}
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', display: 'block', marginBottom: 6 }}>
+                    📸 Inspection Photo Evidence
+                  </label>
+
+                  {/* File Upload Button */}
+                  <div style={{ marginBottom: 12 }}>
+                    <label
+                      htmlFor="checklist-photo-upload"
+                      style={{
+                        padding: '8px 16px',
+                        background: '#0F172A',
+                        color: '#FFFFFF',
+                        borderRadius: 6,
+                        fontSize: '12.5px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        transition: 'background 0.15s ease',
+                      }}
+                    >
+                      📁 Upload Photo from Device
+                    </label>
+                    <input
+                      id="checklist-photo-upload"
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={handlePhotoUpload}
+                    />
+                    <span style={{ fontSize: '11px', color: '#64748B', marginLeft: 10 }}>
+                      Supports JPG, PNG, or mobile capture
+                    </span>
+                  </div>
+
+                  {/* Active Photo Preview */}
+                  {newItem.photoUrl ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: 8 }}>
+                      <img
+                        src={newItem.photoUrl}
+                        alt="Preview"
+                        style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 6, border: '1px solid #94A3B8' }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {newItem.photoName}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#16A34A', fontWeight: 600, marginTop: 2 }}>
+                          ✓ Attached & ready to submit
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setNewItem({ ...newItem, photoUrl: null, photoName: '' })}
+                        style={{ border: 'none', background: '#FEE2E2', color: '#DC2626', padding: '4px 10px', borderRadius: 6, fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ padding: '14px', border: '1.5px dashed #CBD5E1', borderRadius: 8, textAlign: 'center', background: '#F8FAFC' }}>
+                      <div style={{ fontSize: '20px', marginBottom: 2 }}>📷</div>
+                      <div style={{ fontSize: '12px', color: '#64748B' }}>No photo attached yet. Click above to upload an image from your device.</div>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="modal-actions" style={{ marginTop: 16 }}>
@@ -744,6 +884,60 @@ export default function EoScreen({
             <div className="modal-actions" style={{ marginTop: 16 }}>
               <button className="btn btn-ghost" onClick={() => window.print()}>Print / Save PDF</button>
               <button className="btn btn-primary" onClick={() => setShowReportModal(false)}>Close Summary</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Photo Inspection Lightbox Modal */}
+      {viewingPhotoItem && (
+        <div className="modal-backdrop" onClick={() => setViewingPhotoItem(null)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 620, padding: 20 }}>
+            <div className="modal-header" style={{ marginBottom: 12 }}>
+              <div>
+                <h2 style={{ fontSize: '16px', margin: 0, color: '#0F172A' }}>
+                  {viewingPhotoItem.title}
+                </h2>
+                <div style={{ fontSize: '12px', color: '#64748B', marginTop: 2 }}>
+                  Location: <strong>{viewingPhotoItem.location}</strong> • Captured: {viewingPhotoItem.photoTime}
+                </div>
+              </div>
+              <button className="btn btn-ghost" onClick={() => setViewingPhotoItem(null)}>✕</button>
+            </div>
+
+            {/* Photo Preview Container */}
+            <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #E2E8F0', marginBottom: 14, background: '#0F172A' }}>
+              <img
+                src={viewingPhotoItem.photoUrl || imgSiltTrap}
+                alt={viewingPhotoItem.title}
+                style={{ width: '100%', maxHeight: '420px', objectFit: 'contain', display: 'block', margin: '0 auto' }}
+              />
+            </div>
+
+            {/* Metadata & Status */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', padding: '10px 14px', borderRadius: 8, border: '1px solid #E2E8F0', flexWrap: 'wrap', gap: 8 }}>
+              <div style={{ fontSize: '12px', color: '#334155', flex: 1, minWidth: 200 }}>
+                <strong>Observation:</strong> {viewingPhotoItem.note}
+              </div>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  padding: '3px 10px',
+                  borderRadius: 999,
+                  backgroundColor: viewingPhotoItem.status === 'pass' ? '#ECFDF5' : '#FEF2F2',
+                  color: viewingPhotoItem.status === 'pass' ? '#059669' : '#DC2626',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {viewingPhotoItem.status === 'pass' ? '✓ Compliant with DOE' : '⚠️ Action Needed'}
+              </span>
+            </div>
+
+            <div className="modal-actions" style={{ marginTop: 14 }}>
+              <button className="btn btn-primary" onClick={() => setViewingPhotoItem(null)}>
+                Close Photo Evidence
+              </button>
             </div>
           </div>
         </div>

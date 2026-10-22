@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import logoImg from '../assets/BUILDWITHGEEKS LOGO.png';
+import iconImg from '../assets/BUILD WITH GEEKS ICON.png';
+import constructionBg from '../assets/construction_buildings_bg.jpg';
 import { ACCOUNTS } from '../data/accounts';
 
 export default function Login({ onLogin }) {
@@ -18,17 +20,27 @@ export default function Login({ onLogin }) {
 
   return (
     <div className="login">
-      {/* Left Panel (Dark Blue Background - patterns removed) */}
-      <section className="login-brand">
-        <div>
-          <h1>Run the site on sun and battery. Keep the genset off.</h1>
-          <p>
-            Daily power plan for the M&E team, DOE noise logs for the Environmental Officer,
-            and diesel savings for HQ. Works on top of the IESS and Solis systems already on site.
-          </p>
+      {/* Left Panel with Faded Buildings & Embedded Brand Icon */}
+      <section className="login-brand" aria-label="Construction and sustainable development visual">
+        <div
+          className="login-brand-bg-image"
+          style={{ backgroundImage: `url(${constructionBg})` }}
+        />
+        <div className="login-brand-overlay" />
+
+        {/* Featured Brand Icon & Pill Badge over construction image */}
+        <div className="login-brand-hero">
+          <div className="login-brand-icon-wrapper">
+            <img
+              src={iconImg}
+              alt="GreenPulse Emblem"
+              className="login-brand-icon"
+            />
+          </div>
+
         </div>
 
-        {/* Center Wave Separator (inspired by bwell) */}
+        {/* Center Wave Separator */}
         <div className="login-wave-divider" aria-hidden="true">
           <svg viewBox="0 0 120 1000" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -63,8 +75,7 @@ export default function Login({ onLogin }) {
               className="login-large-logo"
             />
             <div className="login-logo-sub">
-              for Sime Darby Property
-            </div>
+              Welcome            </div>
           </div>
 
           <div className="login-card-header">

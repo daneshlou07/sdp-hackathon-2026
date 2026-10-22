@@ -13,13 +13,27 @@ export default function MePlanningView({
   now,
   DayChart,
 }) {
-  const currentTemp = selectedDayIndex === 0
-    ? (liveWeather?.currentTemp || activeForecastDay.maxTemp)
+  const isToday = selectedDayIndex === 0;
+
+  const currentTemp = isToday
+    ? (liveWeather?.currentTemp ?? liveWeather?.temp ?? activeForecastDay.maxTemp)
     : activeForecastDay.maxTemp;
 
-  const feelsLike = selectedDayIndex === 0
-    ? (liveWeather?.feelsLikeTemp || (activeForecastDay.maxTemp + 5))
+  const feelsLike = isToday
+    ? (liveWeather?.feelsLikeTemp ?? (activeForecastDay.maxTemp + 5))
     : (activeForecastDay.maxTemp + 5);
+
+  const humidity = isToday
+    ? (liveWeather?.currentHumidity ?? 78)
+    : 78;
+
+  const conditionText = isToday
+    ? (liveWeather?.conditionText || liveWeather?.condition || activeForecastDay.conditionText)
+    : activeForecastDay.conditionText;
+
+  const conditionEmoji = isToday
+    ? (liveWeather?.emoji || activeForecastDay.emoji || '⛅')
+    : (activeForecastDay.emoji || '⛅');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -34,31 +48,7 @@ export default function MePlanningView({
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
         }}
       >
-        {/* Location & Status Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span
-              style={{
-                fontSize: '12px',
-                fontWeight: 700,
-                color: '#0F766E',
-                background: '#F0FDFA',
-                border: '1px solid #CCFBF1',
-                padding: '4px 10px',
-                borderRadius: '6px',
-              }}
-            >
-              📍 {liveWeather?.locationName || site.locationName || 'City of Elmina, Shah Alam'}
-            </span>
-            <span style={{ fontSize: '11px', color: '#64748B' }}>
-              Autonomous Dispatch Forecast
-            </span>
-          </div>
 
-          <span style={{ fontSize: '12px', color: '#64748B' }}>
-            Forecast for <strong>{activeForecastDay.dayLabel}</strong>, {activeForecastDay.dateFormatted}
-          </span>
-        </div>
 
         {/* Hero Forecast Banner */}
         <div
@@ -77,7 +67,7 @@ export default function MePlanningView({
         >
           {/* Left: Weather Icon & Key Forecast */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
-            <span style={{ fontSize: '48px', lineHeight: 1 }}>{activeForecastDay.emoji || '⛈️'}</span>
+            <span style={{ fontSize: '48px', lineHeight: 1 }}>{conditionEmoji}</span>
             <div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
                 <span style={{ fontSize: '36px', fontWeight: 800, color: '#0F172A', lineHeight: 1, letterSpacing: '-0.02em' }}>
@@ -85,17 +75,17 @@ export default function MePlanningView({
                 </span>
                 <span style={{ fontSize: '18px', fontWeight: 600, color: '#64748B' }}>°C</span>
                 <span style={{ fontSize: '15px', fontWeight: 700, color: '#334155', marginLeft: '4px' }}>
-                  ({activeForecastDay.conditionText})
+                  ({conditionText})
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '13px', color: '#475569' }}>
                 <div>
-                  Feels like <strong>{feelsLike}°C</strong> &bull; Humidity <strong>78%</strong>
+                  Feels like <strong>{feelsLike}°C</strong> &bull; Humidity <strong>{humidity}%</strong>
                 </div>
                 <div>
                   {activeForecastDay.rainProbability >= 50 ? (
                     <span style={{ color: '#DC2626', fontWeight: 600 }}>
-                      ⚠️ Monsoon Rain Expected: {activeForecastDay.stormStart || 13}:00 to {activeForecastDay.stormEnd || 16}:30 ({activeForecastDay.rainProbability}% chance)
+                      ⚠️ Rain Expected: {activeForecastDay.stormStart || 13}:00 to {activeForecastDay.stormEnd || 16}:30 ({activeForecastDay.rainProbability}% chance)
                     </span>
                   ) : (
                     <span style={{ color: '#059669', fontWeight: 600 }}>
@@ -116,19 +106,7 @@ export default function MePlanningView({
               {activeForecastDay.dateFormatted}
             </div>
             <div style={{ marginTop: '6px' }}>
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  padding: '3px 8px',
-                  borderRadius: '999px',
-                  background: activeForecastDay.rainProbability >= 50 ? '#FEF2F2' : '#ECFDF5',
-                  color: activeForecastDay.rainProbability >= 50 ? '#991B1B' : '#047857',
-                  border: activeForecastDay.rainProbability >= 50 ? '1px solid #FECACA' : '1px solid #A7F3D0',
-                }}
-              >
-                {activeForecastDay.rainProbability}% Rain Probability
-              </span>
+
             </div>
           </div>
         </div>
@@ -141,6 +119,7 @@ export default function MePlanningView({
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px' }}>
             {dailyForecastList.map((d, i) => {
               const isSelected = i === selectedDayIndex;
+              const buttonEmoji = (i === 0 && liveWeather?.emoji) ? liveWeather.emoji : (d.emoji || '⛈️');
               return (
                 <button
                   type="button"
@@ -167,7 +146,7 @@ export default function MePlanningView({
                   <div style={{ fontSize: '10px', color: '#64748B' }}>
                     {d.dateFormatted}
                   </div>
-                  <div style={{ fontSize: '24px', margin: '4px 0' }}>{d.emoji || '⛈️'}</div>
+                  <div style={{ fontSize: '24px', margin: '4px 0' }}>{buttonEmoji}</div>
                   <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>
                     {d.maxTemp}° <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 500 }}>{d.minTemp}°</span>
                   </div>
@@ -362,11 +341,9 @@ export default function MePlanningView({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
           <div>
             <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A', margin: '0 0 2px 0' }}>
-              24-Hour Autonomous Power Dispatch ({activeForecastDay.dayLabel})
+              Daily Power Dispatch ({activeForecastDay.dayLabel})
             </h3>
-            <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>
-              BESS battery charging occurs during peak solar (10am–3pm); evening load supported without genset.
-            </p>
+
           </div>
           {activeForecastDay.rainProbability >= 50 && (
             <span
@@ -391,10 +368,10 @@ export default function MePlanningView({
           stormWindow={
             activeForecastDay.rainProbability >= 50
               ? {
-                  from: activeForecastDay.stormStart || 13,
-                  to: activeForecastDay.stormEnd || 16,
-                  label: `Rain Forecast (${activeForecastDay.stormStart || 13}:00 to ${activeForecastDay.stormEnd || 16}:30)`,
-                }
+                from: activeForecastDay.stormStart || 13,
+                to: activeForecastDay.stormEnd || 16,
+                label: `Rain Forecast (${activeForecastDay.stormStart || 13}:00 to ${activeForecastDay.stormEnd || 16}:30)`,
+              }
               : null
           }
         />

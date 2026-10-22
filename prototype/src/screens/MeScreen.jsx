@@ -76,15 +76,25 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
     if (liveWeather?.dailyForecast && liveWeather.dailyForecast.length > 0) {
       return liveWeather.dailyForecast;
     }
-    return [
-      { dayLabel: 'Today', dateFormatted: 'Oct 20', maxTemp: 32, minTemp: 25, conditionText: 'Heavy Thunderstorm', emoji: '⛈️', rainProbability: 70, stormStart: 13, stormEnd: 16 },
-      { dayLabel: 'Tomorrow', dateFormatted: 'Oct 21', maxTemp: 33, minTemp: 25, conditionText: 'Afternoon Storm', emoji: '⛈️', rainProbability: 75, stormStart: 13.5, stormEnd: 16 },
-      { dayLabel: 'Thu', dateFormatted: 'Oct 22', maxTemp: 33, minTemp: 25, conditionText: 'Heavy Thunderstorm', emoji: '⛈️', rainProbability: 70, stormStart: 14, stormEnd: 16.5 },
-      { dayLabel: 'Fri', dateFormatted: 'Oct 23', maxTemp: 29, minTemp: 24, conditionText: 'Monsoon Showers', emoji: '🌧️', rainProbability: 80, stormStart: 12.5, stormEnd: 16 },
-      { dayLabel: 'Sat', dateFormatted: 'Oct 24', maxTemp: 31, minTemp: 24, conditionText: 'Scattered Showers', emoji: '🌦️', rainProbability: 60, stormStart: 14, stormEnd: 16 },
-      { dayLabel: 'Sun', dateFormatted: 'Oct 25', maxTemp: 33, minTemp: 25, conditionText: 'Partly Sunny', emoji: '🌤️', rainProbability: 40, stormStart: 15, stormEnd: 17 },
-      { dayLabel: 'Mon', dateFormatted: 'Oct 26', maxTemp: 32, minTemp: 24, conditionText: 'Afternoon Rain', emoji: '⛈️', rainProbability: 65, stormStart: 13, stormEnd: 15.5 },
-    ];
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      const dayLabel = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short' });
+      days.push({
+        dayLabel,
+        dateFormatted: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        maxTemp: 32 - (i % 2),
+        minTemp: 24,
+        conditionText: i % 2 === 0 ? 'Heavy Thunderstorm' : 'Afternoon Storm',
+        conditionType: 'THUNDERSTORM',
+        emoji: '⛈️',
+        rainProbability: 70 - (i % 3) * 5,
+        stormStart: 13,
+        stormEnd: 16,
+      });
+    }
+    return days;
   }, [liveWeather]);
 
   const activeForecastDay = dailyForecastList[selectedDayIndex] || dailyForecastList[0];
@@ -210,13 +220,6 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
   const litresToday = day.litres;
   const gensetNow = now.genset > 0.5;
 
-  const pills = [
-    { k: 'Battery SoC', v: `${(now.soc * 100).toFixed(0)}%`, tone: now.soc > 0.35 ? 'ok' : 'warn' },
-    { k: net >= 0 ? 'Charging' : 'Discharging', v: `${fmt(Math.abs(net || now.discharge))} kW` },
-    { k: 'Standby Genset', v: gensetNow ? `ON ${fmt(now.genset)} kW` : '100% OFF', tone: gensetNow ? 'warn' : 'ok' },
-    { k: 'Diesel Saved', v: `${fmt(m.avoidedL)} L`, tone: 'ok' },
-  ];
-
   return (
     <Shell
       user={user}
@@ -228,7 +231,6 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
       tabs={TABS}
       activeTab={activeTab}
       onTabChange={setActiveTab}
-      pills={pills}
       onLogout={onLogout}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -238,164 +240,151 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
         {/* TAB 1: BATTERY & POWER FLOW VIEW */}
         {activeTab === 'flow' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Top 4 KPI Metric Cards with Mini-Histograms */}
-          <TopKpiCards site={site} now={now} day={day} currentHour={hour} gensetNow={gensetNow} />
+            {/* Top 4 KPI Metric Cards with Mini-Histograms */}
+            <TopKpiCards site={site} now={now} day={day} currentHour={hour} gensetNow={gensetNow} />
 
-          {/* Middle: 5-Node Live Power Flow & Key Impact Metrics */}
-          <LivePowerFlowAndMetrics site={site} now={now} m={m} gensetNow={gensetNow} />
+            {/* Middle: 5-Node Live Power Flow & Key Impact Metrics */}
+            <LivePowerFlowAndMetrics site={site} now={now} m={m} gensetNow={gensetNow} />
 
-          {/* Bottom: 3 Analytics Visualizations */}
-          <BottomAnalyticsRow site={site} day={day} currentHour={hour} />
+            {/* Bottom: 3 Analytics Visualizations */}
+            <BottomAnalyticsRow site={site} day={day} currentHour={hour} />
 
-          {/* Interactive 24-Hour Timeline Scrubber */}
-          <div className="card" style={{ padding: '14px 18px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
-              <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
-                ⏱️ Active Simulation Timeline: <strong style={{ color: '#0F766E' }}>{hour}:00 ({hour < 12 ? `${hour === 0 ? 12 : hour} AM` : `${hour === 12 ? 12 : hour - 12} PM`})</strong>
-              </span>
-              <span style={{ fontSize: '11px', color: '#64748B' }}>
-                Drag slider to inspect live solar output, battery charge/discharge & site machinery demand at any hour
-              </span>
+            {/* Interactive 24-Hour Timeline Scrubber */}
+            <div className="card" style={{ padding: '14px 18px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
+                  ⏱️ Active Simulation Timeline: <strong style={{ color: '#0F766E' }}>{hour}:00 ({hour < 12 ? `${hour === 0 ? 12 : hour} AM` : `${hour === 12 ? 12 : hour - 12} PM`})</strong>
+                </span>
+                <span style={{ fontSize: '11px', color: '#64748B' }}>
+                  Drag slider to inspect live solar output, battery charge/discharge & site machinery demand at any hour
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="23"
+                value={hour}
+                onChange={(e) => setHour(Number(e.target.value))}
+                style={{ width: '100%', accentColor: '#0F766E', cursor: 'pointer' }}
+                aria-label="Simulation hour slider"
+              />
             </div>
-            <input
-              type="range"
-              min="0"
-              max="23"
-              value={hour}
-              onChange={(e) => setHour(Number(e.target.value))}
-              style={{ width: '100%', accentColor: '#0F766E', cursor: 'pointer' }}
-              aria-label="Simulation hour slider"
-            />
-          </div>
 
 
-          {/* Worker Quarters (CLQ) 24/7 Power & Living Dignity Status (Act 446) */}
-          <section
-            className="card"
-            style={{
-              padding: '20px 22px',
-              background: '#FFFFFF',
-              border: '1px solid #E2E8F0',
-              borderRadius: '12px',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '20px' }}>🏠</span>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A' }}>
-                      Worker Quarters (CLQ) Power & Living Dignity
-                    </span>
-                    <span
-                      style={{
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        color: '#047857',
-                        background: '#ECFDF5',
-                        border: '1px solid #A7F3D0',
-                        padding: '2px 8px',
-                        borderRadius: '999px',
-                      }}
-                    >
-                      Act 446 Compliant
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
-                    Continuous night-time dormitory ventilation and clean water pumping telemetry.
+            {/* Worker Quarters 24/7 Power Supply */}
+            <section
+              className="card"
+              style={{
+                padding: '20px 22px',
+                background: '#FFFFFF',
+                border: '1px solid #E2E8F0',
+                borderRadius: '12px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '20px' }}>🏠</span>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A' }}>
+                        Worker Quarters Power Supply
+                      </span>
+
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
+                      Keeps fans, lights, and clean water running all night when the diesel generator is off.
+                    </div>
                   </div>
                 </div>
-              </div>
-              <button
-                id="run-clq-audit-btn"
-                type="button"
-                onClick={() => setDormAuditRan(!dormAuditRan)}
-                style={{
-                  backgroundColor: dormAuditRan ? '#059669' : '#0F172A',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  padding: '8px 14px',
-                  borderRadius: '8px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'background-color 0.15s ease',
-                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
-                }}
-              >
-                {dormAuditRan ? '✓ Audit Log Active' : '📋 Run Statutory Act 446 Audit'}
-              </button>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px' }}>
-                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>24/7 Dorm Fan & Light Uptime</div>
-                <div style={{ fontSize: '20px', fontWeight: 800, color: '#059669', margin: '2px 0' }}>100% Active</div>
-                <div style={{ fontSize: '11px', color: '#047857' }}>Zero 02:00 AM blackouts; continuous dorm ventilation</div>
+                <button
+                  id="run-clq-audit-btn"
+                  type="button"
+                  onClick={() => setDormAuditRan(!dormAuditRan)}
+                  style={{
+                    backgroundColor: dormAuditRan ? '#059669' : '#0F172A',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'background-color 0.15s ease',
+                    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+                  }}
+                >
+                  {dormAuditRan ? '✓ Power Status Confirmed' : '📋 Check Night Power Status'}
+                </button>
               </div>
 
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px' }}>
-                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>CLQ Ambient Heat Index</div>
-                <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: '2px 0' }}>26.5°C</div>
-                <div style={{ fontSize: '11px', color: '#64748B' }}>Workers' Minimum Standards of Housing (Act 446)</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px' }}>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Dorm Fans & Lights</div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: '#059669', margin: '2px 0' }}>100% Running</div>
+                </div>
+
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px' }}>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Room Temperature</div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: '2px 0' }}>26.5°C</div>
+                  <div style={{ fontSize: '11px', color: '#64748B' }}>Comfortable airflow maintained for workers</div>
+                </div>
+
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px' }}>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Backup Priority</div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: '#2563EB', margin: '2px 0' }}>Never Turned Off</div>
+                  <div style={{ fontSize: '11px', color: '#64748B' }}>Battery always reserves power for worker dorms</div>
+                </div>
               </div>
 
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px' }}>
-                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Hostel Circuit Priority</div>
-                <div style={{ fontSize: '20px', fontWeight: 800, color: '#2563EB', margin: '2px 0' }}>P0 Critical (Never Shed)</div>
-                <div style={{ fontSize: '11px', color: '#64748B' }}>Continuous BESS buffer for fans and clean water pumps</div>
-              </div>
-            </div>
+              {dormAuditRan && (
+                <div
+                  style={{
+                    backgroundColor: '#F0FDF4',
+                    border: '1px solid #BBF7D0',
+                    borderRadius: '8px',
+                    padding: '12px 14px',
+                    marginTop: '14px',
+                    fontSize: '12px',
+                    color: '#166534',
+                    lineHeight: 1.45,
+                  }}
+                >
+                  ✅ <strong>Power Verified:</strong> Worker quarters received continuous electricity throughout the night directly from battery storage with zero blackouts.
+                </div>
+              )}
+            </section>
+          </div>
+        )}
 
-            {dormAuditRan && (
-              <div
-                style={{
-                  backgroundColor: '#F0FDF4',
-                  border: '1px solid #BBF7D0',
-                  borderRadius: '8px',
-                  padding: '12px 14px',
-                  marginTop: '14px',
-                  fontSize: '12px',
-                  color: '#166534',
-                  lineHeight: 1.45,
-                }}
-              >
-                ✅ <strong>Act 446 Telemetry Verified:</strong> Continuous night power to worker dormitories confirmed. Zero night breaker trips logged in last 72 hours. Digital certificate compiled for Department of Labour (JTK) and CIDB inspection.
-              </div>
-            )}
-          </section>
-        </div>
-      )}
+        {/* TAB 2: MACHINERY & CIRCUITS VIEW */}
+        {activeTab === 'equipment' && (
+          <MeEquipmentView
+            site={site}
+            now={now}
+            allEquipment={allEquipment}
+            siteCustomEq={siteCustomEq}
+            onOpenAddModal={() => setIsAddEqModalOpen(true)}
+            onRemoveEquipment={handleRemoveEquipment}
+          />
+        )}
 
-      {/* TAB 2: MACHINERY & CIRCUITS VIEW */}
-      {activeTab === 'equipment' && (
-        <MeEquipmentView
-          site={site}
-          now={now}
-          allEquipment={allEquipment}
-          siteCustomEq={siteCustomEq}
-          onOpenAddModal={() => setIsAddEqModalOpen(true)}
-          onRemoveEquipment={handleRemoveEquipment}
-        />
-      )}
-
-      {/* TAB 3: INTELLIGENT POWER PLANNING */}
-      {activeTab === 'weather' && (
-        <MePlanningView
-          site={site}
-          liveWeather={liveWeather}
-          selectedDayIndex={selectedDayIndex}
-          setSelectedDayIndex={setSelectedDayIndex}
-          dailyForecastList={dailyForecastList}
-          activeForecastDay={activeForecastDay}
-          dailySavings={dailySavings}
-          equipmentPlan={equipmentPlan}
-          activePlanDay={activePlanDay}
-          now={now}
-          DayChart={DayChart}
-        />
-      )}
+        {/* TAB 3: INTELLIGENT POWER PLANNING */}
+        {activeTab === 'weather' && (
+          <MePlanningView
+            site={site}
+            liveWeather={liveWeather}
+            selectedDayIndex={selectedDayIndex}
+            setSelectedDayIndex={setSelectedDayIndex}
+            dailyForecastList={dailyForecastList}
+            activeForecastDay={activeForecastDay}
+            dailySavings={dailySavings}
+            equipmentPlan={equipmentPlan}
+            activePlanDay={activePlanDay}
+            now={now}
+            DayChart={DayChart}
+          />
+        )}
       </div>
 
 

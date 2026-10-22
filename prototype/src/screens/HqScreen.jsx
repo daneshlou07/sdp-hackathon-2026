@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Shell from '../components/Shell';
 import { Bars } from '../components/Charts';
 import { FLEET_NEXT } from '../data/sites';
@@ -14,6 +14,33 @@ export default function HqScreen({ user, sites = [], onAddSite, onLogout }) {
   const [activeTab, setActiveTab] = useState('savings');
   const [dieselPrice, setDieselPrice] = useState(DIESEL_RM_PER_L);
   const [showAddSiteModal, setShowAddSiteModal] = useState(false);
+
+  // Auto-update diesel price from Malaysia Ministry of Finance / data.gov.my live feed
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchLatestFuelPrice() {
+      try {
+        const res = await fetch('https://api.data.gov.my/data-catalogue/?id=fuelprice');
+        if (!res.ok) throw new Error('API fetch failed');
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          const levels = data.filter((x) => x.series_type === 'level' && typeof x.diesel === 'number');
+          if (levels.length > 0 && isMounted) {
+            const latest = levels[levels.length - 1];
+            if (latest.diesel > 0) {
+              setDieselPrice(latest.diesel);
+            }
+          }
+        }
+      } catch (_) {
+        // Keeps verified DIESEL_RM_PER_L if offline or network fails
+      }
+    }
+    fetchLatestFuelPrice();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Transfer approvals state
   const [transfers, setTransfers] = useState({
@@ -71,13 +98,6 @@ export default function HqScreen({ user, sites = [], onAddSite, onLogout }) {
     { label: 'Aug', a: totals.totalRM * 1.04 + 14000, b: totals.totalRM * 0.18 },
     { label: 'Sep', a: totals.totalRM * 1.01 + 11000, b: totals.totalRM * 0.17 },
     { label: 'Oct (MTD)', a: totals.totalRM + 13000, b: totals.totalRM * 0.16 },
-  ];
-
-  const pills = [
-    { k: 'Portfolio Savings', v: `RM ${fmt(totals.totalRM, 2)}/mo`, tone: 'ok' },
-    { k: 'Active Parcels', v: `${sites.length} Sites`, tone: 'ok' },
-    { k: 'Diesel Eliminated', v: `${fmt(totals.avoidedL, 2)} L`, tone: 'ok' },
-    { k: 'Commercial Diesel', v: `RM ${dieselPrice.toFixed(2)}/L` },
   ];
 
   // Pre-Tender Sizing Calculation
@@ -148,7 +168,6 @@ The Main Contractor shall deploy a Containerized Battery Energy Storage System (
       tabs={TABS}
       activeTab={activeTab}
       onTabChange={setActiveTab}
-      pills={pills}
       onLogout={onLogout}
     >
       {/* Top Header */}
@@ -156,7 +175,7 @@ The Main Contractor shall deploy a Containerized Battery Energy Storage System (
         <div>
           <h1>HQ Executive Dashboard</h1>
           <p>
-            Group cost savings, active site performance, and project energy planning
+            Track group savings, site performance, and energy costs across all projects.
           </p>
         </div>
         <div className="top-meta" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -178,20 +197,8 @@ The Main Contractor shall deploy a Containerized Battery Energy Storage System (
           >
             <span>+</span> Add New Project
           </button>
-          <div className="price-input card" style={{ padding: '4px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 12, fontWeight: 600 }}>Commercial Diesel:</span>
-            <span style={{ fontSize: 12 }}>RM</span>
-            <input
-              id="diesel-price-input"
-              type="number"
-              step="0.05"
-              min="2.00"
-              max="10.00"
-              value={dieselPrice}
-              onChange={(e) => setDieselPrice(parseFloat(e.target.value) || 0)}
-              style={{ width: 65, padding: '3px 6px', borderRadius: 4, border: '1px solid var(--line)', fontWeight: 600, fontSize: 12 }}
-            />
-            <span style={{ fontSize: 11, color: 'var(--muted)' }}>/ L</span>
+          <div className="card" style={{ padding: '6px 12px', fontSize: '12.5px', fontWeight: 600, color: '#0F172A' }}>
+            Current Diesel Price : RM {dieselPrice.toFixed(2)} / L
           </div>
         </div>
       </div>
@@ -201,45 +208,56 @@ The Main Contractor shall deploy a Containerized Battery Energy Storage System (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Executive KPI Summary */}
           <section className="grid g4">
-            <div className="card kpi hero">
-              <div className="label">Monthly Cash Saved</div>
-              <div className="value num" style={{ color: '#0F766E' }}>
-                RM {fmt(totals.totalRM, 2)}
+            <div
+              className="card kpi"
+              style={{
+                border: '1.5px solid #10B981',
+                background: 'linear-gradient(180deg, #FFFFFF 0%, #F0FDF4 100%)',
+                position: 'relative',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                <span className="label" style={{ fontWeight: 900, color: '#065F46' }}>Monthly Cash Saved</span>
+
               </div>
-              <div className="foot num">RM {fmt(totals.fuelRM, 2)} fuel + RM {fmt(totals.rentalAvoided, 2)} generator rentals avoided</div>
+              <div className="value num" style={{ color: '#047857', fontSize: '30px', margin: '4px 0 6px' }}>
+                RM {fmt(Math.round(totals.totalRM))}
+              </div>
+
             </div>
 
             <div className="card kpi">
-              <div className="label">Diesel Eliminated</div>
-              <div className="value num">
-                {fmt(totals.avoidedL, 2)}<small> L / mo</small>
+              <div className="label">Diesel Fuel Cut</div>
+              <div className="value num" style={{ margin: '4px 0 6px' }}>
+                {fmt(Math.round(totals.avoidedL))}<small> Litres / mo</small>
               </div>
-              <div className="foot num">Across {sites.length} active construction sites</div>
+              <div className="foot" style={{ fontSize: '12px', color: '#64748B' }}>
+                Across {sites.length} active construction sites
+              </div>
             </div>
 
             <div className="card kpi">
-              <div className="label">Carbon Abated (Scope 1)</div>
-              <div className="value num">
-                {fmt(totals.co2t, 2)}<small> tCO2e / mo</small>
+              <div className="label">Carbon Reduced</div>
+              <div className="value num" style={{ margin: '4px 0 6px' }}>
+                {Math.round(totals.co2t)}<small> Tonnes / mo</small>
               </div>
-              <div className="foot num">Direct generator exhaust eliminated</div>
+
             </div>
 
             <div className="card kpi">
-              <div className="label">Average Site Payback</div>
-              <div className="value num" style={{ color: '#0F766E' }}>
+              <div className="label">Payback Period</div>
+              <div className="value num" style={{ color: '#0F766E', margin: '4px 0 6px' }}>
                 14<small> Months</small>
               </div>
-              <div className="foot num">Full capital equipment payback</div>
+              <div className="foot" style={{ fontSize: '12px', color: '#64748B' }}>
+                Equipment cost fully recovered in just over 1 year
+              </div>
             </div>
           </section>
 
           {/* 6-Month Cost Comparison Graph */}
           <section className="card">
             <h2 style={{ fontSize: '16px', margin: '0 0 4px 0' }}>Monthly Power Costs: Generator vs Solar + Battery</h2>
-            <p className="sub" style={{ margin: '0 0 12px 0', fontSize: '12px' }}>
-              Comparing old rental diesel generator expenses against clean solar and battery operating costs.
-            </p>
             <Bars rows={chartRows} height={210} />
             <div className="legend" style={{ marginTop: 10 }}>
               <span><i style={{ background: '#94a3b8' }} />Old Generator Fuel & Rental Invoices</span>
@@ -247,55 +265,66 @@ The Main Contractor shall deploy a Containerized Battery Energy Storage System (
             </div>
           </section>
 
-          {/* Diesel Price Sensitivity & Bursa ESG Box */}
+          {/* Fuel Price Protection & ESG Impact */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 14 }}>
-            <div className="card" style={{ borderLeft: '4px solid #0F766E' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
-                  Commercial Diesel Price Impact
-                </span>
-                <span style={{ fontSize: '12px', color: '#0F766E', fontWeight: 700 }}>
-                  Current: RM {dieselPrice.toFixed(2)} / L
-                </span>
-              </div>
-              <p style={{ fontSize: '12px', color: '#64748B', margin: '0 0 10px 0' }}>
-                Commercial construction has no fuel subsidies. Solar and battery power locks in zero fuel cost regardless of market diesel price hikes.
-              </p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, background: '#F8FAFC', padding: 10, borderRadius: 6, border: '1px solid #E2E8F0' }}>
-                <div>
-                  <span style={{ fontSize: '11px', color: '#64748B' }}>At Current RM {dieselPrice.toFixed(2)}/L:</span>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>RM {fmt(totals.totalRM, 2)}/mo</div>
-                  <div style={{ fontSize: '11px', color: '#0F766E' }}>Payback in 14 Months</div>
+            {/* Card 1: Fuel Price Spike Protection */}
+            <div className="card" style={{ borderLeft: '4px solid #059669', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
+                    Fuel Price Protection
+                  </span>
+
                 </div>
+
+                <div style={{ fontSize: '24px', fontWeight: 800, color: '#047857', margin: '6px 0 2px' }}>
+                  +RM {fmt(Math.round(totals.avoidedL * (6.0 - dieselPrice)))} / mo
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748B', marginBottom: 12 }}>
+                  Additional savings if market diesel rises from RM {dieselPrice.toFixed(2)} to RM 6.00 / L
+                </div>
+              </div>
+
+              <div style={{ background: '#F8FAFC', padding: '10px 12px', borderRadius: 8, border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <span style={{ fontSize: '11px', color: '#64748B' }}>If Diesel Hits RM 6.00/L:</span>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#059669' }}>
-                    RM {fmt(totals.avoidedL * 6.0 + totals.rentalAvoided, 2)}/mo
+                  <div style={{ fontSize: '11px', color: '#64748B' }}>Current Savings</div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>RM {fmt(Math.round(totals.totalRM))}/mo</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '11px', color: '#64748B' }}>At RM 6.00 / L</div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#059669' }}>
+                    RM {fmt(Math.round(totals.avoidedL * 6.0 + totals.rentalAvoided))}/mo (12 mo ROI)
                   </div>
-                  <div style={{ fontSize: '11px', color: '#059669' }}>Payback in 12 Months</div>
                 </div>
               </div>
             </div>
 
-            <div className="card" style={{ borderLeft: '4px solid #2563EB' }}>
-              <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A', display: 'block', marginBottom: 6 }}>
-                Bursa Malaysia Annual Report Data (Scope 1)
-              </span>
-              <p style={{ fontSize: '12px', color: '#64748B', margin: '0 0 10px 0' }}>
-                Verified metrics ready to copy into the Sime Darby Property Annual Integrated Report.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: 4 }}>
-                  <span>Direct Scope 1 Emission Reduction</span>
-                  <b style={{ color: '#059669' }}>-77.6% Cut</b>
+            {/* Card 2: ESG Impact */}
+            <div className="card" style={{ borderLeft: '4px solid #2563EB', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
+                    Sustainability Impact
+                  </span>
+
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: 4 }}>
-                  <span>Construction Carbon Intensity</span>
-                  <b style={{ color: '#059669' }}>4.12 kg CO2e / m2 (vs 18.40 baseline)</b>
+
+                <div style={{ fontSize: '24px', fontWeight: 800, color: '#2563EB', margin: '6px 0 2px' }}>
+                  -78% Emissions
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Green Certification Compliance</span>
-                  <b>GBI Gold & CIDB MyCREST Verified</b>
+                <div style={{ fontSize: '12px', color: '#64748B', marginBottom: 12 }}>
+                  Direct generator exhaust eliminated across all active sites
+                </div>
+              </div>
+
+              <div style={{ background: '#F8FAFC', padding: '10px 12px', borderRadius: 8, border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '11px', color: '#64748B' }}>Site Carbon Intensity</div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>4.1 kg/m² <span style={{ fontSize: '11px', color: '#059669', fontWeight: 600 }}>(-78% vs baseline)</span></div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '11px', color: '#64748B' }}>Green Standards</div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>GBI Gold & MyCREST</div>
                 </div>
               </div>
             </div>
@@ -310,10 +339,7 @@ The Main Contractor shall deploy a Containerized Battery Energy Storage System (
           <section className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: '16px' }}>Active Projects & Cost Savings</h2>
-                <p className="sub" style={{ margin: '2px 0 0 0', fontSize: '12px' }}>
-                  Financial and fuel performance across {sites.length} Sime Darby Property construction parcels.
-                </p>
+                <h2 style={{ margin: 0, fontSize: '16px' }}>Project Savings Overview</h2>
               </div>
               <button
                 onClick={() => setShowAddSiteModal(true)}
@@ -371,10 +397,8 @@ The Main Contractor shall deploy a Containerized Battery Energy Storage System (
 
           {/* BESS Fleet Asset Relocation Roadmap */}
           <section className="card">
-            <h2 style={{ fontSize: '16px', margin: '0 0 4px 0' }}>Battery Redeployment Schedule</h2>
-            <p className="sub" style={{ margin: '0 0 12px 0', fontSize: '12px' }}>
-              When a site gets permanent TNB power, the battery container moves to the next project parcel.
-            </p>
+            <h2 style={{ fontSize: '16px', margin: '0 0 4px 0' }}>Battery Relocation Plan</h2>
+
 
             <div className="table-responsive">
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
@@ -485,138 +509,155 @@ The Main Contractor shall deploy a Containerized Battery Energy Storage System (
       {/* TAB 3: PRE-TENDER PROJECT CALCULATOR */}
       {activeTab === 'calculator' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <section className="card" style={{ borderLeft: '4px solid #D71920' }}>
-            <h2 style={{ fontSize: '16px', margin: '0 0 4px 0' }}>Pre-Tender Project Sizing</h2>
-            <p className="sub" style={{ margin: '0 0 14px 0', fontSize: '12px' }}>
-              Estimate battery size and cost savings before issuing contractor tender packages.
-            </p>
+          {/* Inputs */}
+          <div className="card" style={{ padding: '16px 20px' }}>
+            <h3 style={{ fontSize: '15px', margin: '0 0 14px 0', color: '#0F172A', fontWeight: 700 }}>
+              Project Equipment & Duration
+            </h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 16 }}>
-              <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 8, border: '1px solid #E2E8F0' }}>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>Tower Cranes</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
-                  <input
-                    type="range"
-                    min="1"
-                    max="4"
-                    value={calcCranes}
-                    onChange={(e) => setCalcCranes(Number(e.target.value))}
-                    style={{ flex: 1 }}
-                  />
-                  <b className="num" style={{ fontSize: '15px', color: '#0F172A', minWidth: 40 }}>{calcCranes} Cranes</b>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+              <div style={{ background: '#F8FAFC', padding: '12px 14px', borderRadius: 8, border: '1px solid #E2E8F0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>Tower Cranes</span>
+                  <span style={{ fontSize: '14px', fontWeight: 800, color: '#0F766E' }}>{calcCranes}</span>
                 </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="4"
+                  value={calcCranes}
+                  onChange={(e) => setCalcCranes(Number(e.target.value))}
+                  style={{ width: '100%', accentColor: '#0F766E', cursor: 'pointer' }}
+                />
               </div>
 
-              <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 8, border: '1px solid #E2E8F0' }}>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>Passenger Hoists</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
-                  <input
-                    type="range"
-                    min="1"
-                    max="4"
-                    value={calcHoists}
-                    onChange={(e) => setCalcHoists(Number(e.target.value))}
-                    style={{ flex: 1 }}
-                  />
-                  <b className="num" style={{ fontSize: '15px', color: '#0F172A', minWidth: 40 }}>{calcHoists} Hoists</b>
+              <div style={{ background: '#F8FAFC', padding: '12px 14px', borderRadius: 8, border: '1px solid #E2E8F0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>Passenger Hoists</span>
+                  <span style={{ fontSize: '14px', fontWeight: 800, color: '#0F766E' }}>{calcHoists}</span>
                 </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="4"
+                  value={calcHoists}
+                  onChange={(e) => setCalcHoists(Number(e.target.value))}
+                  style={{ width: '100%', accentColor: '#0F766E', cursor: 'pointer' }}
+                />
               </div>
 
-              <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 8, border: '1px solid #E2E8F0' }}>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>Building Storeys</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
-                  <input
-                    type="range"
-                    min="12"
-                    max="50"
-                    value={calcFloors}
-                    onChange={(e) => setCalcFloors(Number(e.target.value))}
-                    style={{ flex: 1 }}
-                  />
-                  <b className="num" style={{ fontSize: '15px', color: '#0F172A', minWidth: 40 }}>{calcFloors} Floors</b>
+              <div style={{ background: '#F8FAFC', padding: '12px 14px', borderRadius: 8, border: '1px solid #E2E8F0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>Building Height</span>
+                  <span style={{ fontSize: '14px', fontWeight: 800, color: '#0F766E' }}>{calcFloors} Floors</span>
                 </div>
+                <input
+                  type="range"
+                  min="12"
+                  max="50"
+                  value={calcFloors}
+                  onChange={(e) => setCalcFloors(Number(e.target.value))}
+                  style={{ width: '100%', accentColor: '#0F766E', cursor: 'pointer' }}
+                />
               </div>
 
-              <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 8, border: '1px solid #E2E8F0' }}>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>Construction Duration</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
-                  <input
-                    type="range"
-                    min="12"
-                    max="36"
-                    value={calcDuration}
-                    onChange={(e) => setCalcDuration(Number(e.target.value))}
-                    style={{ flex: 1 }}
-                  />
-                  <b className="num" style={{ fontSize: '15px', color: '#0F172A', minWidth: 40 }}>{calcDuration} Months</b>
+              <div style={{ background: '#F8FAFC', padding: '12px 14px', borderRadius: 8, border: '1px solid #E2E8F0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>Duration</span>
+                  <span style={{ fontSize: '14px', fontWeight: 800, color: '#0F766E' }}>{calcDuration} Months</span>
                 </div>
+                <input
+                  type="range"
+                  min="12"
+                  max="36"
+                  value={calcDuration}
+                  onChange={(e) => setCalcDuration(Number(e.target.value))}
+                  style={{ width: '100%', accentColor: '#0F766E', cursor: 'pointer' }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Results */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
+            <div className="card" style={{ padding: '16px', borderLeft: '4px solid #059669' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#64748B' }}>
+                Recommended Setup
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: '4px 0 2px' }}>
+                {recBessSize}
+              </div>
+              <div style={{ fontSize: '13px', color: '#059669', fontWeight: 600 }}>
+                + {recSolarKwp} Solar
               </div>
             </div>
 
-            {/* Calculated Output Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginBottom: 14 }}>
-              <div style={{ background: '#F0FDF4', padding: '10px 14px', borderRadius: 8, border: '1px solid #BBF7D0' }}>
-                <div style={{ fontSize: '11px', color: '#166534', fontWeight: 600 }}>Recommended Setup</div>
-                <div style={{ fontSize: '15px', fontWeight: 800, color: '#166534', marginTop: 2 }}>{recBessSize}</div>
-                <div style={{ fontSize: '11px', color: '#15803D' }}>+ {recSolarKwp} Rooftop Solar</div>
+            <div className="card" style={{ padding: '16px', borderLeft: '4px solid #059669', background: '#F0FDF4' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#065F46' }}>
+                Total Estimated Savings
               </div>
-
-              <div style={{ background: '#EFF6FF', padding: '10px 14px', borderRadius: 8, border: '1px solid #BFDBFE' }}>
-                <div style={{ fontSize: '11px', color: '#1E40AF', fontWeight: 600 }}>Estimated Diesel Eliminated</div>
-                <div style={{ fontSize: '15px', fontWeight: 800, color: '#1E40AF', marginTop: 2 }} className="num">
-                  {fmt(estMonthlyFuelL * calcDuration, 2)} Litres
-                </div>
-                <div style={{ fontSize: '11px', color: '#2563EB' }}>RM {fmt(estMonthlyFuelRM * calcDuration, 2)} fuel budget</div>
+              <div style={{ fontSize: '24px', fontWeight: 800, color: '#047857', margin: '4px 0 2px' }}>
+                RM {fmt(Math.round(estTotalSavingsRM))}
               </div>
-
-              <div style={{ background: '#FEF2F2', padding: '10px 14px', borderRadius: 8, border: '1px solid #FECACA' }}>
-                <div style={{ fontSize: '11px', color: '#991B1B', fontWeight: 600 }}>Total Estimated Savings</div>
-                <div style={{ fontSize: '15px', fontWeight: 800, color: '#991B1B', marginTop: 2 }} className="num">
-                  RM {fmt(estTotalSavingsRM, 2)}
-                </div>
-                <div style={{ fontSize: '11px', color: '#B91C1C' }}>Capital Payback: {recPaybackMonths} Months</div>
+              <div style={{ fontSize: '13px', color: '#065F46', fontWeight: 600 }}>
+                {recPaybackMonths} Months Payback
               </div>
             </div>
 
-            {/* Tender Clause Box */}
-            <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 8, border: '1px solid #CBD5E1' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, flexWrap: 'wrap', gap: 8 }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>
-                  Contractor Tender Clause (Copy and paste into tender documents):
-                </span>
-                <button
-                  onClick={handleCopyClause}
-                  style={{
-                    padding: '4px 10px',
-                    backgroundColor: copiedClause ? '#059669' : '#0F766E',
-                    color: '#fff',
-                    borderRadius: 6,
-                    border: 'none',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {copiedClause ? '✓ Copied to Clipboard!' : '📋 Copy Tender Clause'}
-                </button>
+            <div className="card" style={{ padding: '16px', borderLeft: '4px solid #0284C7' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#64748B' }}>
+                Diesel Eliminated
               </div>
-              <pre
+              <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: '4px 0 2px' }}>
+                {fmt(Math.round(estMonthlyFuelL * calcDuration))} Litres
+              </div>
+              <div style={{ fontSize: '13px', color: '#0284C7', fontWeight: 600 }}>
+                RM {fmt(Math.round(estMonthlyFuelRM * calcDuration))} Saved
+              </div>
+            </div>
+          </div>
+
+          {/* Tender Clause */}
+          <div className="card" style={{ padding: '16px 20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
+              <h3 style={{ fontSize: '15px', margin: 0, color: '#0F172A', fontWeight: 700 }}>
+                Contractor Tender Clause
+              </h3>
+
+              <button
+                onClick={handleCopyClause}
                 style={{
-                  fontSize: '12px',
-                  color: '#334155',
-                  backgroundColor: '#FFFFFF',
-                  padding: 10,
+                  padding: '6px 14px',
+                  backgroundColor: copiedClause ? '#059669' : '#0F172A',
+                  color: '#FFFFFF',
                   borderRadius: 6,
-                  border: '1px solid #E2E8F0',
-                  whiteSpace: 'pre-wrap',
-                  margin: 0,
-                  fontFamily: 'monospace',
+                  border: 'none',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
                 }}
               >
-                {tenderClauseText}
-              </pre>
+                {copiedClause ? '✓ Copied' : '📋 Copy Clause'}
+              </button>
             </div>
-          </section>
+
+            <div
+              style={{
+                background: '#F8FAFC',
+                border: '1px solid #E2E8F0',
+                borderRadius: 8,
+                padding: '14px 16px',
+                fontSize: '13px',
+                color: '#334155',
+                lineHeight: 1.6,
+              }}
+            >
+              "The Main Contractor shall deploy a Containerized Battery Energy Storage System (minimum <strong>{recBessSize}</strong>) with rooftop solar PV (minimum <strong>{recSolarKwp}</strong>) for primary site machinery. Continuous diesel generator operation is prohibited under DOE Schedule 6. Telemetry shall connect to Sime Darby Property's GreenPulse system."
+            </div>
+          </div>
         </div>
       )}
 

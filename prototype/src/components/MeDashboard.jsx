@@ -46,9 +46,10 @@ export function HeroBanner({ site, liveWeather }) {
     return () => clearInterval(interval);
   }, []);
 
-  const temp = liveWeather?.temp || 31;
-  const condition = liveWeather?.condition || 'Partly cloudy';
-  const location = liveWeather?.location || 'Kuala Lumpur';
+  const temp = liveWeather?.currentTemp ?? liveWeather?.temp ?? 26;
+  const condition = liveWeather?.conditionText ?? liveWeather?.condition ?? 'Partly cloudy';
+  const location = liveWeather?.locationName ?? liveWeather?.location ?? (site?.locationName || site?.name || 'Kuala Lumpur');
+  const emoji = liveWeather?.emoji || '⛅';
 
   const siteImg = useMemo(() => getSiteHeroImage(site), [site]);
 
@@ -108,7 +109,7 @@ export function HeroBanner({ site, liveWeather }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
         {/* Weather Pill */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '26px' }}>⛅</span>
+          <span style={{ fontSize: '26px' }}>{emoji}</span>
           <div>
             <div style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF', lineHeight: 1.1 }}>
               {temp}°C
@@ -332,7 +333,6 @@ export function TopKpiCards({ site, now, day, currentHour, gensetNow }) {
 
 // --- SUB-COMPONENT 3: LIVE POWER FLOW & KEY METRICS ---
 export function LivePowerFlowAndMetrics({ site, now, m, gensetNow }) {
-  const [timeframe, setTimeframe] = useState('live');
   const [metricMonth, setMetricMonth] = useState('This Month');
 
   return (
@@ -355,29 +355,8 @@ export function LivePowerFlowAndMetrics({ site, now, m, gensetNow }) {
             </div>
           </div>
 
-          {/* Timeframe selector pills */}
-          <div style={{ display: 'flex', gap: '4px', background: '#F8FAFC', padding: '3px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-            {['live', 'today', '7d', '30d'].map((tf) => (
-              <button
-                key={tf}
-                type="button"
-                onClick={() => setTimeframe(tf)}
-                style={{
-                  border: 'none',
-                  background: timeframe === tf ? '#DC2626' : 'transparent',
-                  color: timeframe === tf ? '#FFFFFF' : '#64748B',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  textTransform: tf === 'live' ? 'none' : 'capitalize',
-                }}
-              >
-                {tf === 'live' ? 'Live' : tf === 'today' ? 'Today' : tf === '7d' ? '7 Days' : '30 Days'}
-              </button>
-            ))}
-          </div>
+
+
         </div>
 
         {/* 5-Node Schematic Grid */}
