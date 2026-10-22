@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import Shell from '../components/Shell';
 import { DayChart } from '../components/Charts';
+import { HeroBanner, TopKpiCards, LivePowerFlowAndMetrics, BottomAnalyticsRow } from '../components/MeDashboard';
+import MeEquipmentView from '../components/MeEquipmentView';
+import MePlanningView from '../components/MePlanningView';
 import { SITES } from '../data/sites';
 import { WEATHER, planTips, monthly, fmt, GENSET_KWH_PER_L, DIESEL_RM_PER_L, simulateDay, simulateForecastDay } from '../data/model';
 import { getSolarCastForecast } from '../data/aiEngine';
@@ -13,7 +16,7 @@ const TABS = [
 ];
 
 export default function MeScreen({ user, sites = SITES, onLogout }) {
-  const [siteId, setSiteId] = useState('putra');
+  const [siteId, setSiteId] = useState('elmina');
   const [activeTab, setActiveTab] = useState('flow');
   const [liveWeather, setLiveWeather] = useState(null);
   const [isWeatherKeyModalOpen, setIsWeatherKeyModalOpen] = useState(false);
@@ -22,7 +25,6 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [hour, setHour] = useState(11);
   const [smart, setSmart] = useState(true);
-  const [gensetLockedOut, setGensetLockedOut] = useState(true);
   const [dormAuditRan, setDormAuditRan] = useState(false);
   const [isAddEqModalOpen, setIsAddEqModalOpen] = useState(false);
   const [customEquipment, setCustomEquipment] = useState({});
@@ -229,185 +231,136 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
       pills={pills}
       onLogout={onLogout}
     >
-      {/* Top Header */}
-      <div className="top">
-        <div>
-          <h1>{site.name}: M&E Power Command</h1>
-          <p>
-            {site.kind} | BESS {site.bessKWh} kWh ({site.bessKW} kW Inverter) | Solar {site.solarKWp} kWp
-          </p>
-        </div>
-      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {/* Hero Township Header Banner */}
+        <HeroBanner site={site} liveWeather={liveWeather} />
 
-      {/* TAB 1: BATTERY & POWER FLOW VIEW */}
-      {activeTab === 'flow' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <section className="grid g4">
-            <div className={`card kpi hero ${now.soc < 0.35 ? 'warn' : ''}`}>
-              <div className="label">Battery Stored Energy</div>
-              <div className="value num">
-                {(now.soc * 100).toFixed(0)}<small>%</small>
-              </div>
-              <div className="foot num">
-                {fmt(now.soc * site.bessKWh)} of {site.bessKWh} kWh stored
-              </div>
-            </div>
-            <div className="card kpi">
-              <div className="label">Solar Charging In</div>
-              <div className="value num" style={{ color: '#0F766E' }}>
-                +{fmt(now.charge)}<small> kW</small>
-              </div>
-              <div className="foot num">Rooftop Solar generating {fmt(now.solar)} kW</div>
-            </div>
-            <div className="card kpi">
-              <div className="label">Discharging to Site Equipment</div>
-              <div className="value num" style={{ color: '#D71920' }}>
-                −{fmt(now.discharge)}<small> kW</small>
-              </div>
-              <div className="foot">
-                {hoursLeft != null && now.discharge > 0
-                  ? `About ${fmt(hoursLeft, 1)} h clean runtime remaining`
-                  : 'Site load 100% covered by solar'}
-              </div>
-            </div>
-            <div className={`card kpi hero ${gensetNow ? 'warn' : ''}`}>
-              <div className="label">Backup Diesel Genset</div>
-              <div className="value" style={{ color: gensetNow ? '#DC2626' : '#059669' }}>
-                {gensetNow ? 'ON (Warning)' : '100% OFF'}
-              </div>
-              <div className="foot num">
-                {fmt(litresToday)} L used today vs {fmt(day.loadKWh / GENSET_KWH_PER_L)} L baseline
-              </div>
-            </div>
-          </section>
+        {/* TAB 1: BATTERY & POWER FLOW VIEW */}
+        {activeTab === 'flow' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Top 4 KPI Metric Cards with Mini-Histograms */}
+          <TopKpiCards site={site} now={now} day={day} currentHour={hour} gensetNow={gensetNow} />
 
-          {/* Active Field Control: Generator Lockout */}
-          <div className="card" style={{ borderLeft: gensetLockedOut ? '4px solid #059669' : '4px solid #DC2626' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-              <span style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A' }}>
-                Backup Generator Lockout
+          {/* Middle: 5-Node Live Power Flow & Key Impact Metrics */}
+          <LivePowerFlowAndMetrics site={site} now={now} m={m} gensetNow={gensetNow} />
+
+          {/* Bottom: 3 Analytics Visualizations */}
+          <BottomAnalyticsRow site={site} day={day} currentHour={hour} />
+
+          {/* Interactive 24-Hour Timeline Scrubber */}
+          <div className="card" style={{ padding: '14px 18px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
+                ⏱️ Active Simulation Timeline: <strong style={{ color: '#0F766E' }}>{hour}:00 ({hour < 12 ? `${hour === 0 ? 12 : hour} AM` : `${hour === 12 ? 12 : hour - 12} PM`})</strong>
               </span>
-              <span className={`tag ${gensetLockedOut ? 'ok' : 'warn'}`}>
-                {gensetLockedOut ? 'Locked Off' : 'Armed'}
-              </span>
-            </div>
-            <p className="sub" style={{ margin: '0 0 12px 0', fontSize: '13px' }}>
-              Keeps the diesel generator turned off so it never starts during quiet hours.
-            </p>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <button
-                id="toggle-genset-lockout"
-                className={`btn ${gensetLockedOut ? 'btn-primary' : 'btn-ghost'}`}
-                onClick={() => setGensetLockedOut(!gensetLockedOut)}
-                style={{
-                  backgroundColor: gensetLockedOut ? '#0F766E' : '#DC2626',
-                  color: '#FFFFFF',
-                  fontWeight: 700,
-                  fontSize: '12px',
-                  padding: '8px 14px',
-                  borderRadius: 8,
-                }}
-              >
-                {gensetLockedOut ? '🔒 Generator Locked (0 L Fuel)' : '⚠️ Allow Generator to Run'}
-              </button>
-              <span style={{ fontSize: '12px', color: '#64748B' }}>
-                {gensetLockedOut ? 'Zero fuel used' : 'Standby enabled'}
+              <span style={{ fontSize: '11px', color: '#64748B' }}>
+                Drag slider to inspect live solar output, battery charge/discharge & site machinery demand at any hour
               </span>
             </div>
+            <input
+              type="range"
+              min="0"
+              max="23"
+              value={hour}
+              onChange={(e) => setHour(Number(e.target.value))}
+              style={{ width: '100%', accentColor: '#0F766E', cursor: 'pointer' }}
+              aria-label="Simulation hour slider"
+            />
           </div>
 
-          <section className="card">
-            <h2>Live Site Power Flow</h2>
-            <div className="flow">
-              <div className="flow-node">
-                <span>Rooftop Solar</span>
-                <b className="num">{fmt(now.solar)} kW</b>
-              </div>
-              <div className="arrow">
-                <b className="num">{fmt(now.charge)} kW</b>charging →
-              </div>
-              <div className="flow-node batt">
-                <span>MegaBatt BESS</span>
-                <b className="num">{(now.soc * 100).toFixed(0)}%</b>
-                <div className="soc-bar">
-                  <i style={{ width: `${now.soc * 100}%` }} />
-                </div>
-              </div>
-              <div className="arrow">
-                <b className="num">{fmt(now.discharge + Math.min(now.solar, now.load))} kW</b>to site circuits →
-              </div>
-              <div className="flow-node">
-                <span>Site Machinery</span>
-                <b className="num">{fmt(now.load)} kW</b>
-                {gensetNow && <span>genset adds {fmt(now.genset)} kW</span>}
-              </div>
-            </div>
-          </section>
-
-          <section className="grid g3">
-            <div className="card kpi">
-              <div className="label">Monthly Diesel Eliminated</div>
-              <div className="value num">{fmt(m.avoidedL)}<small> L</small></div>
-              <div className="foot num">Avoided fuel expense: RM {fmt(m.fuelRM)}</div>
-            </div>
-            <div className="card kpi">
-              <div className="label">Avoided Generator Rental</div>
-              <div className="value num">RM {fmt(site.rentalAvoided)}<small> / mo</small></div>
-              <div className="foot">Cancelled 300 to 500 kVA rental contracts</div>
-            </div>
-            <div className="card kpi">
-              <div className="label">Net Cash OpEx Saved</div>
-              <div className="value num" style={{ color: '#0F766E' }}>RM {fmt(m.totalRM)}<small> / mo</small></div>
-              <div className="foot">Full capital payback in {site.paybackMonths} months</div>
-            </div>
-          </section>
 
           {/* Worker Quarters (CLQ) 24/7 Power & Living Dignity Status (Act 446) */}
-          <section className="card" style={{ borderLeft: '4px solid #0F766E', background: '#F8FAFC' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: '18px' }}>🏠</span>
+          <section
+            className="card"
+            style={{
+              padding: '20px 22px',
+              background: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              borderRadius: '12px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '20px' }}>🏠</span>
                 <div>
-                  <span style={{ fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
-                    Worker Quarters (CLQ) Power & Living Dignity
-                  </span>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#047857', background: '#ECFDF5', border: '1px solid #A7F3D0', padding: '2px 8px', borderRadius: 4, marginLeft: 8 }}>
-                    Act 446 Compliant
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A' }}>
+                      Worker Quarters (CLQ) Power & Living Dignity
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color: '#047857',
+                        background: '#ECFDF5',
+                        border: '1px solid #A7F3D0',
+                        padding: '2px 8px',
+                        borderRadius: '999px',
+                      }}
+                    >
+                      Act 446 Compliant
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
+                    Continuous night-time dormitory ventilation and clean water pumping telemetry.
+                  </div>
                 </div>
               </div>
               <button
                 id="run-clq-audit-btn"
-                className="btn btn-primary"
+                type="button"
                 onClick={() => setDormAuditRan(!dormAuditRan)}
-                style={{ fontSize: '11px', padding: '5px 12px', width: 'auto', margin: 0 }}
+                style={{
+                  backgroundColor: dormAuditRan ? '#059669' : '#0F172A',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  padding: '8px 14px',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'background-color 0.15s ease',
+                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+                }}
               >
                 {dormAuditRan ? '✓ Audit Log Active' : '📋 Run Statutory Act 446 Audit'}
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginTop: 8 }}>
-              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 6, padding: '10px 12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px' }}>
                 <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>24/7 Dorm Fan & Light Uptime</div>
-                <div style={{ fontSize: '16px', fontWeight: 800, color: '#059669', margin: '2px 0' }}>100% Active</div>
+                <div style={{ fontSize: '20px', fontWeight: 800, color: '#059669', margin: '2px 0' }}>100% Active</div>
                 <div style={{ fontSize: '11px', color: '#047857' }}>Zero 02:00 AM blackouts; continuous dorm ventilation</div>
               </div>
 
-              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 6, padding: '10px 12px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px' }}>
                 <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>CLQ Ambient Heat Index</div>
-                <div style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: '2px 0' }}>26.5°C</div>
+                <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: '2px 0' }}>26.5°C</div>
                 <div style={{ fontSize: '11px', color: '#64748B' }}>Workers' Minimum Standards of Housing (Act 446)</div>
               </div>
 
-              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 6, padding: '10px 12px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px' }}>
                 <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Hostel Circuit Priority</div>
-                <div style={{ fontSize: '16px', fontWeight: 800, color: '#2563EB', margin: '2px 0' }}>P0 Critical (Never Shed)</div>
+                <div style={{ fontSize: '20px', fontWeight: 800, color: '#2563EB', margin: '2px 0' }}>P0 Critical (Never Shed)</div>
                 <div style={{ fontSize: '11px', color: '#64748B' }}>Continuous BESS buffer for fans and clean water pumps</div>
               </div>
             </div>
 
             {dormAuditRan && (
-              <div style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 6, padding: '10px 12px', marginTop: 12, fontSize: '12px', color: '#166534' }}>
+              <div
+                style={{
+                  backgroundColor: '#F0FDF4',
+                  border: '1px solid #BBF7D0',
+                  borderRadius: '8px',
+                  padding: '12px 14px',
+                  marginTop: '14px',
+                  fontSize: '12px',
+                  color: '#166534',
+                  lineHeight: 1.45,
+                }}
+              >
                 ✅ <strong>Act 446 Telemetry Verified:</strong> Continuous night power to worker dormitories confirmed. Zero night breaker trips logged in last 72 hours. Digital certificate compiled for Department of Labour (JTK) and CIDB inspection.
               </div>
             )}
@@ -417,306 +370,33 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
 
       {/* TAB 2: MACHINERY & CIRCUITS VIEW */}
       {activeTab === 'equipment' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <section className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-              <div>
-                <h2 style={{ margin: 0, fontSize: '18px' }}>Equipment Power Distribution</h2>
-                <p className="sub" style={{ margin: '4px 0 0 0', fontSize: '13px' }}>
-                  Live power draw across active site machinery circuits.
-                </p>
-              </div>
-              <button
-                id="open-connect-circuit-modal"
-                className="btn btn-primary"
-                onClick={() => setIsAddEqModalOpen(true)}
-                style={{ fontSize: '12px', padding: '8px 14px', width: 'auto', margin: 0 }}
-              >
-                + Connect Machine Circuit
-              </button>
-            </div>
-            <div className="eq">
-              {allEquipment.map((eq) => {
-                const isCustom = eq.id.startsWith('custom-');
-                const kw = now.parts[eq.id] !== undefined ? now.parts[eq.id] : (isCustom ? eq.kw * 0.75 : 0);
-                const maxKw = Math.max(...allEquipment.map((e) => e.kw), 1);
-                return (
-                  <div key={eq.id} className={`eq-row ${kw ? '' : 'off'}`} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontWeight: 600 }}>{eq.name}</span>
-                      {eq.breaker && (
-                        <span style={{ fontSize: '10px', background: '#F1F5F9', border: '1px solid #CBD5E1', padding: '1px 5px', borderRadius: 4, color: '#475569' }}>
-                          {eq.breaker}
-                        </span>
-                      )}
-                      {eq.priority && (
-                        <span style={{ fontSize: '10px', background: eq.priority.includes('P0') ? '#FEF2F2' : '#EFF6FF', color: eq.priority.includes('P0') ? '#991B1B' : '#1E40AF', padding: '1px 5px', borderRadius: 4, fontWeight: 700 }}>
-                          {eq.priority}
-                        </span>
-                      )}
-                    </div>
-                    <span className="eq-track" style={{ flex: 1 }}>
-                      <i style={{ width: `${(kw / maxKw) * 100}%` }} />
-                    </span>
-                    <span className="num" style={{ minWidth: 60, textAlign: 'right' }}>{kw ? `${fmt(kw)} kW` : 'off'}</span>
-                    {isCustom && (
-                      <button
-                        onClick={() => handleRemoveEquipment(eq.id)}
-                        style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: '2px 6px', fontSize: '12px' }}
-                        title="Disconnect Circuit"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <p className="note" style={{ marginTop: 12 }}>
-              Total Active Demand: <strong>{fmt(now.load + siteCustomEq.reduce((acc, eq) => acc + (eq.kw * 0.75), 0))} kW</strong>. The containerized BESS inverter limit is <strong>{site.bessKW} kW</strong>, guaranteeing all connected sub-contractor equipment runs without breaker trips.
-            </p>
-          </section>
-        </div>
+        <MeEquipmentView
+          site={site}
+          now={now}
+          allEquipment={allEquipment}
+          siteCustomEq={siteCustomEq}
+          onOpenAddModal={() => setIsAddEqModalOpen(true)}
+          onRemoveEquipment={handleRemoveEquipment}
+        />
       )}
 
       {/* TAB 3: INTELLIGENT POWER PLANNING */}
       {activeTab === 'weather' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Main Weather Card */}
-          <section className="card">
-            {/* Location Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-              <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F766E', background: '#F0FDFA', border: '1px solid #CCFBF1', padding: '4px 12px', borderRadius: 6 }}>
-                📍 {liveWeather?.locationName || site.locationName || 'Putra Heights, Subang Jaya'}
-              </span>
-              <span style={{ fontSize: '12px', color: '#64748B' }}>
-                Forecast for {activeForecastDay.dayLabel}, {activeForecastDay.dateFormatted}
-              </span>
-            </div>
-
-            {/* Weather Hero View */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 10, padding: '16px 20px', marginBottom: 16, flexWrap: 'wrap', gap: 16 }}>
-              {/* Left: Weather Icon & Key Forecast */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-                <span style={{ fontSize: '46px', lineHeight: 1 }}>{activeForecastDay.emoji || '⛈️'}</span>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
-                    <span style={{ fontSize: '36px', fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>
-                      {selectedDayIndex === 0 ? (liveWeather?.currentTemp || activeForecastDay.maxTemp) : activeForecastDay.maxTemp}
-                    </span>
-                    <span style={{ fontSize: '18px', fontWeight: 600, color: '#64748B' }}>°C</span>
-                    <span style={{ fontSize: '15px', fontWeight: 600, color: '#334155', marginLeft: 4 }}>
-                      ({activeForecastDay.conditionText})
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: '13px', color: '#475569' }}>
-                    <div>
-                      Feels like <strong>{selectedDayIndex === 0 ? (liveWeather?.feelsLikeTemp || (activeForecastDay.maxTemp + 5)) : (activeForecastDay.maxTemp + 5)}°C</strong>
-                    </div>
-                    <div>
-                      Rain expected: <strong>{activeForecastDay.stormStart || 13}:00 to {activeForecastDay.stormEnd || 16}:30</strong> ({activeForecastDay.rainProbability}% chance)
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right: Selected Day */}
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A' }}>
-                  {activeForecastDay.dayLabel}
-                </div>
-                <div style={{ fontSize: '13px', color: '#64748B' }}>
-                  {activeForecastDay.dateFormatted}
-                </div>
-              </div>
-            </div>
-
-            {/* 7-Day Forecast Row */}
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                7-Day Forecast
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
-                {dailyForecastList.map((d, i) => {
-                  const isSelected = i === selectedDayIndex;
-                  return (
-                    <div
-                      key={d.dayLabel + i}
-                      onClick={() => setSelectedDayIndex(i)}
-                      style={{
-                        background: isSelected ? '#F0FDFA' : '#FFFFFF',
-                        border: isSelected ? '2px solid #0F766E' : '1px solid #CBD5E1',
-                        borderRadius: 8,
-                        padding: '10px 6px',
-                        textAlign: 'center',
-                        cursor: 'pointer',
-                        boxShadow: isSelected ? '0 2px 8px rgba(15, 118, 110, 0.15)' : 'none',
-                        transition: 'all 0.15s ease',
-                      }}
-                    >
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: isSelected ? '#0F766E' : '#334155' }}>
-                        {d.dayLabel}
-                      </div>
-                      <div style={{ fontSize: '10px', color: '#64748B', marginBottom: 2 }}>
-                        {d.dateFormatted}
-                      </div>
-                      <div style={{ fontSize: '24px', margin: '4px 0' }}>{d.emoji || '⛈️'}</div>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>
-                        {d.maxTemp}° <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 500 }}>{d.minTemp}°</span>
-                      </div>
-                      <div style={{ fontSize: '10px', color: '#0284C7', fontWeight: 600, marginTop: 4 }}>
-                        {d.rainProbability}% rain
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Daily Savings & Generator Status (Compact 4-Card Row) */}
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
-                <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 8, padding: '12px 14px' }}>
-                  <div style={{ fontSize: '11px', color: '#166534', fontWeight: 600 }}>Diesel Saved</div>
-                  <div style={{ fontSize: '22px', fontWeight: 800, color: '#15803D', margin: '2px 0' }}>
-                    {dailySavings.avoidedL} <small style={{ fontSize: '13px' }}>Litres</small>
-                  </div>
-                </div>
-                <div style={{ background: '#F0FDFA', border: '1px solid #99F6E4', borderRadius: 8, padding: '12px 14px' }}>
-                  <div style={{ fontSize: '11px', color: '#0F766E', fontWeight: 600 }}>Cost Saved</div>
-                  <div style={{ fontSize: '22px', fontWeight: 800, color: '#0F766E', margin: '2px 0' }}>
-                    RM {fmt(dailySavings.savedRM)}
-                  </div>
-                </div>
-                <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 8, padding: '12px 14px' }}>
-                  <div style={{ fontSize: '11px', color: '#1E40AF', fontWeight: 600 }}>Clean Power</div>
-                  <div style={{ fontSize: '22px', fontWeight: 800, color: '#2563EB', margin: '2px 0' }}>
-                    {dailySavings.cleanShare}%
-                  </div>
-                </div>
-                <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: 8, padding: '12px 14px' }}>
-                  <div style={{ fontSize: '11px', color: '#065F46', fontWeight: 600 }}>Generator Status</div>
-                  <div style={{ fontSize: '18px', fontWeight: 800, color: '#059669', margin: '4px 0 0 0', display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <span style={{ fontSize: '14px' }}></span> 100% OFF
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Equipment Power Schedule */}
-            <div>
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Equipment Power Schedule ({activeForecastDay.dayLabel})
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-                {/* Column 1: Charge on Solar */}
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, paddingBottom: 8, borderBottom: '1px solid #E2E8F0' }}>
-                    <span style={{ fontSize: '14px' }}>🟢</span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F766E' }}>Charge on Solar</span>
-                  </div>
-
-                  {equipmentPlan.chargeSolar.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {equipmentPlan.chargeSolar.map((eq) => (
-                        <div key={eq.id} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 6, padding: '8px 10px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                            <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>{eq.name}</span>
-                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748B' }}>{eq.kw} kW</span>
-                          </div>
-                          <div style={{ fontSize: '11px', fontWeight: 700, color: '#0F766E' }}>
-                            {eq.action}
-                          </div>
-                          <div style={{ fontSize: '11px', color: '#64748B', marginTop: 3, lineHeight: 1.3 }}>
-                            {eq.slotNote}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div style={{ fontSize: '12px', color: '#64748B', fontStyle: 'italic', padding: '8px 0' }}>
-                      No shiftable charging loads configured for this day.
-                    </div>
-                  )}
-                </div>
-
-                {/* Column 2: Rain Protection / Pause */}
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, paddingBottom: 8, borderBottom: '1px solid #E2E8F0' }}>
-                    <span style={{ fontSize: '14px' }}>{equipmentPlan.isRainDay ? '🔴' : '☀️'}</span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: equipmentPlan.isRainDay ? '#DC2626' : '#059669' }}>
-                      {equipmentPlan.isRainDay ? 'Pause during Rain' : 'No Rain Pause'}
-                    </span>
-                  </div>
-
-                  {equipmentPlan.isRainDay && equipmentPlan.pauseRain.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {equipmentPlan.pauseRain.map((eq) => (
-                        <div key={eq.id} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 6, padding: '8px 10px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                            <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>{eq.name}</span>
-                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748B' }}>{eq.kw} kW</span>
-                          </div>
-                          <div style={{ fontSize: '11px', fontWeight: 700, color: '#DC2626' }}>
-                            {eq.action}
-                          </div>
-                          <div style={{ fontSize: '11px', color: '#64748B', marginTop: 3, lineHeight: 1.3 }}>
-                            {eq.slotNote}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div style={{ fontSize: '12px', color: '#047857', background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: 6, padding: '12px', lineHeight: 1.4 }}>
-                      ✓ Low rain risk ({activeForecastDay.rainProbability}%). All site equipment can run continuously on solar without rain pauses.
-                    </div>
-                  )}
-                </div>
-
-                {/* Column 3: Heavy Machinery (Always Powered) */}
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, paddingBottom: 8, borderBottom: '1px solid #E2E8F0' }}>
-                    <span style={{ fontSize: '14px' }}>⚡</span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#2563EB' }}>Always Powered</span>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {equipmentPlan.alwaysPowered.map((eq) => (
-                      <div key={eq.id} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 6, padding: '8px 10px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                          <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>{eq.name}</span>
-                          <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748B' }}>{eq.kw} kW</span>
-                        </div>
-                        <div style={{ fontSize: '11px', fontWeight: 700, color: '#2563EB' }}>
-                          {eq.action}
-                        </div>
-                        <div style={{ fontSize: '11px', color: '#64748B', marginTop: 3, lineHeight: 1.3 }}>
-                          {eq.slotNote}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Real 24-Hour Power Schedule from Actual Forecast */}
-          <section className="card">
-            <h2 style={{ margin: '0 0 12px 0', fontSize: '16px' }}>
-              24-Hour Power Schedule ({activeForecastDay.dayLabel}: {activeForecastDay.conditionText})
-            </h2>
-            <DayChart
-              hours={activePlanDay.hours}
-              now={selectedDayIndex === 0 ? now : null}
-              stormWindow={activeForecastDay.rainProbability >= 50 ? { from: activeForecastDay.stormStart || 13, to: activeForecastDay.stormEnd || 16, label: `Rain Forecast (${activeForecastDay.stormStart || 13}:00 to ${activeForecastDay.stormEnd || 16}:30)` } : null}
-            />
-          </section>
-        </div>
+        <MePlanningView
+          site={site}
+          liveWeather={liveWeather}
+          selectedDayIndex={selectedDayIndex}
+          setSelectedDayIndex={setSelectedDayIndex}
+          dailyForecastList={dailyForecastList}
+          activeForecastDay={activeForecastDay}
+          dailySavings={dailySavings}
+          equipmentPlan={equipmentPlan}
+          activePlanDay={activePlanDay}
+          now={now}
+          DayChart={DayChart}
+        />
       )}
+      </div>
 
 
       {/* Connect Machine Circuit Modal */}

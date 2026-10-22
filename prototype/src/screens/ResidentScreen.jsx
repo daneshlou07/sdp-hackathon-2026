@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import logoImg from '../assets/BUILDWITHGEEKS LOGO.png';
 
 export default function ResidentScreen({ user, complaints = [], onAddComplaint, onLogout }) {
   const [unitBlock, setUnitBlock] = useState('Damayan Residensi (Block B - Direct Site Facing)');
@@ -48,26 +49,14 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
           borderBottom: '1px solid #1E293B',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span
-            style={{
-              backgroundColor: '#D71920',
-              color: '#FFFFFF',
-              fontWeight: 900,
-              padding: '4px 8px',
-              borderRadius: 6,
-              fontSize: '14px',
-            }}
-          >
-            SDP
-          </span>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: '16px', letterSpacing: '-0.02em' }}>
-              Sime Darby Property: Resident Community Portal
-            </div>
-            <div style={{ fontSize: '12px', color: '#94A3B8' }}>
-              Putra Heights Phase 2 Boundary Care
-            </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <img
+            src={logoImg}
+            alt="GreenPulse"
+            style={{ height: '32px', width: 'auto', display: 'block' }}
+          />
+          <div style={{ fontWeight: 700, fontSize: '15px', color: '#F8FAFC', letterSpacing: '-0.01em' }}>
+            Resident Community Portal
           </div>
         </div>
 
@@ -89,136 +78,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
       </header>
 
       {/* Main Content */}
-      <main style={{ maxWidth: 960, margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-        {/* Live Boundary Noise & Work Status Banner */}
-        <section
-          style={{
-            background: 'linear-gradient(135deg, #0F766E 0%, #115E59 100%)',
-            color: '#FFFFFF',
-            borderRadius: 14,
-            padding: '24px',
-            boxShadow: '0 10px 25px -5px rgba(15, 118, 110, 0.2)',
-          }}
-        >
-          {/* Banner Title */}
-          <div style={{ marginBottom: 18 }}>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#CCFBF1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Neighborhood Boundary Protection
-            </div>
-            <h1 style={{ fontSize: '22px', fontWeight: 800, margin: '4px 0' }}>
-              Putra Heights Phase 2 (Facing Damayan Residensi)
-            </h1>
-            <p style={{ margin: 0, fontSize: '13px', color: '#CCFBF1', lineHeight: 1.4 }}>
-              Real-time noise and air quality monitoring directly outside your residential boundary.
-            </p>
-          </div>
-
-          {/* 2 Balanced Cards Inside Banner */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
-            {/* Card 1: Noise Level & Human Context */}
-            <div
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.12)',
-                backdropFilter: 'blur(8px)',
-                borderRadius: 12,
-                padding: '16px 18px',
-                border: '1px solid rgba(255,255,255,0.2)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#CCFBF1' }}>Live Boundary Sound Level</span>
-                  <span
-                    style={{
-                      backgroundColor: '#059669',
-                      color: '#FFFFFF',
-                      fontSize: '11px',
-                      fontWeight: 800,
-                      padding: '2px 8px',
-                      borderRadius: 999,
-                    }}
-                  >
-                    ✓ Normal & Safe
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, margin: '8px 0 6px' }}>
-                  <span style={{ fontSize: '38px', fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1 }} className="num">
-                    54.10
-                  </span>
-                  <span style={{ fontSize: '16px', fontWeight: 600, color: '#CCFBF1' }}>dBA</span>
-                  <span style={{ fontSize: '12px', color: '#A7F3D0', marginLeft: 'auto' }}>
-                    Limit: 60.00 dBA
-                  </span>
-                </div>
-
-                {/* Visual Decibel Bar */}
-                <div style={{ height: 6, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 99, overflow: 'hidden', margin: '8px 0 10px' }}>
-                  <div style={{ width: `${(54.1 / 60) * 100}%`, height: '100%', backgroundColor: '#34D399', borderRadius: 99 }} />
-                </div>
-              </div>
-
-              <div style={{ fontSize: '12px', color: '#CCFBF1', lineHeight: 1.4, borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 8 }}>
-                🔊 <strong>Sound Context:</strong> Similar to a quiet office or moderate rainfall. Well below old diesel generator sites (85+ dBA).
-              </div>
-            </div>
-
-            {/* Card 2: Permitted Work Hours Right Now & Clean Power Status */}
-            <div
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.12)',
-                backdropFilter: 'blur(8px)',
-                borderRadius: 12,
-                padding: '16px 18px',
-                border: '1px solid rgba(255,255,255,0.2)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#CCFBF1' }}>Can They Work Right Now?</span>
-                  <span
-                    style={{
-                      backgroundColor: '#047857',
-                      color: '#ECFDF5',
-                      fontSize: '11px',
-                      fontWeight: 800,
-                      padding: '2px 8px',
-                      borderRadius: 999,
-                      border: '1px solid #10B981',
-                    }}
-                  >
-                    🟢 Normal Work Permitted
-                  </span>
-                </div>
-
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF', marginBottom: 4 }}>
-                  Daytime Hours: 08:00 to 18:00
-                </div>
-                <div style={{ fontSize: '12px', color: '#CCFBF1', lineHeight: 1.4 }}>
-                  Heavy machinery and cranes are permitted under MBSA & DOE rules. All noisy operations must strictly end by 6:00 PM.
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 8, marginTop: 10, fontSize: '11px' }}>
-                <div>
-                  <span style={{ color: '#CCFBF1' }}>Diesel Generator:</span>
-                  <div style={{ fontWeight: 800, color: '#34D399' }}>100% Locked OFF</div>
-                </div>
-                <div>
-                  <span style={{ color: '#CCFBF1' }}>Air & Smoke:</span>
-                  <div style={{ fontWeight: 800, color: '#34D399' }}>Zero Fumes (Battery)</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
+      <main style={{ maxWidth: 780, margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* PRIMARY FORM: REPORT NOISE, DUST, OR DISTURBANCE */}
         <section
           style={{
@@ -233,9 +93,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
             <h2 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 6px 0', color: '#0F172A' }}>
               Report Noise, Dust, or Disturbance
             </h2>
-            <p style={{ fontSize: '13px', color: '#64748B', margin: 0, lineHeight: 1.5 }}>
-              Hearing unexpected banging after hours, smelling exhaust, or seeing mud? Send a direct alert to the on-site team.
-            </p>
+
           </div>
 
           {submitted && (
@@ -255,67 +113,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
             </div>
           )}
 
-          {/* Quick Issue Preset Chips */}
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: '12px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: 6 }}>
-              Quick Select Common Issues (Tap to auto-fill):
-            </label>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {[
-                { label: '🔊 Loud Rumbling Hum', cat: 'Low-Frequency Engine / Motor Hum', text: 'Persistent low-frequency humming vibration heard inside my unit.' },
-                { label: '🏗️ Late-Night Crane Noise', cat: 'Late-Night Crane / Hoist Movement', text: 'Crane or passenger hoist operating outside permitted daytime hours.' },
-                { label: '🚛 Speeding Trucks / Mud', cat: 'Access Road Lorries / Speeding', text: 'Construction lorries driving too fast or leaving mud on public road.' },
-                { label: '💡 Spotlight in Bedroom', cat: 'Bright Floodlight Glare into Bedrooms', text: 'High-intensity site floodlight pointed directly into my bedroom window.' },
-              ].map((chip) => (
-                <button
-                  key={chip.label}
-                  type="button"
-                  onClick={() => {
-                    setCategory(chip.cat);
-                    setIssue(chip.text);
-                  }}
-                  style={{
-                    backgroundColor: category === chip.cat ? '#FEF2F2' : '#F8FAFC',
-                    color: category === chip.cat ? '#991B1B' : '#334155',
-                    border: category === chip.cat ? '1px solid #FCA5A5' : '1px solid #E2E8F0',
-                    borderRadius: 999,
-                    padding: '6px 12px',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  {chip.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {/* Anonymous Guarantee Banner */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '12px 16px',
-                backgroundColor: '#F0FDF4',
-                borderRadius: 8,
-                border: '1px solid #BBF7D0',
-              }}
-            >
-              <span style={{ fontSize: '20px' }}>🛡️</span>
-              <div>
-                <div style={{ fontSize: '13px', fontWeight: 800, color: '#166534' }}>
-                  100% Anonymous (No personal data collected)
-                </div>
-                <div style={{ fontSize: '12px', color: '#15803D' }}>
-                  No names, IC numbers, or phone numbers are required.
-                </div>
-              </div>
-            </div>
-
             {/* Form Fields Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
               <div>
@@ -335,10 +133,12 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                     color: '#0F172A',
                   }}
                 >
-                  <option value="Damayan Residensi (Block B - Direct Site Facing)">Damayan Residensi (Block B - Facing Site)</option>
-                  <option value="Damayan Residensi (Block A - North Facing)">Damayan Residensi (Block A - North Facing)</option>
-                  <option value="Putra Avenue Landed Homes">Putra Avenue Landed Homes</option>
-                  <option value="Putra Heights Commercial Hub">Putra Heights Commercial Hub</option>
+                  <option value="City of Elmina (Kanopi Residences - Facing Site)">City of Elmina (Kanopi Residences - Facing Site)</option>
+                  <option value="City of Elmina (Elmina Green Phases 3 & 4)">City of Elmina (Elmina Green Phases 3 & 4)</option>
+                  <option value="Serenia City (Serenia Baleria Precinct)">Serenia City (Serenia Baleria Precinct)</option>
+                  <option value="Serenia City (Commercial Hub Buffer)">Serenia City (Commercial Hub Buffer)</option>
+                  <option value="Bandar Bukit Raja (The Straits Landed Homes)">Bandar Bukit Raja (The Straits Landed Homes)</option>
+                  <option value="Bandar Bukit Raja (Industrial Park Buffer Zone)">Bandar Bukit Raja (Industrial Park Buffer Zone)</option>
                 </select>
               </div>
 
@@ -413,6 +213,24 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
             >
               <span>📢</span> Send to Site Environmental Officer
             </button>
+
+            {/* Option 1: Trust reassurance line directly below submit button */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                fontSize: '12px',
+                color: '#64748B',
+                marginTop: -4,
+              }}
+            >
+              <span style={{ fontSize: '15px' }}>🛡️</span>
+              <span>
+                <strong style={{ color: '#166534', fontWeight: 600 }}>100% Anonymous</strong> — No names, IC numbers, or phone numbers are collected.
+              </span>
+            </div>
           </form>
         </section>
 
@@ -422,7 +240,169 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
             Community Information & Guidelines
           </div>
 
-          {/* ACCORDION 1: RECENT COMMUNITY FEEDBACK & ACTIONS TAKEN */}
+          {/* ACCORDION 1: PERMITTED CONSTRUCTION WORKING HOURS */}
+          <div
+            style={{
+              backgroundColor: '#1E293B',
+              borderRadius: 10,
+              border: '1px solid #334155',
+              overflow: 'hidden',
+              transition: 'border-color 0.15s ease',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => toggleAccordion('hours')}
+              style={{
+                width: '100%',
+                padding: '16px 20px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                textAlign: 'left',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: '16px' }}>🕒</span>
+                <span style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF' }}>
+                  Permitted Construction Working Hours
+                </span>
+              </div>
+              <span style={{ fontSize: '20px', fontWeight: 800, color: '#F59E0B' }}>
+                {openAccordions.hours ? '−' : '+'}
+              </span>
+            </button>
+
+            {openAccordions.hours && (
+              <div
+                style={{
+                  padding: '16px 20px 20px',
+                  borderTop: '1px solid #334155',
+                  backgroundColor: '#0F172A',
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ padding: '10px 14px', backgroundColor: '#1E293B', borderRadius: 8, border: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#F8FAFC' }}>Monday - Saturday (Daytime)</div>
+                      <div style={{ fontSize: '12px', color: '#94A3B8' }}>Normal construction, cranes, and hoists</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#4ADE80' }}>08:00 - 18:00</div>
+                      <div style={{ fontSize: '11px', color: '#94A3B8' }}>Limit: 60.00 dBA</div>
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '10px 14px', backgroundColor: '#1E293B', borderRadius: 8, border: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#F8FAFC' }}>Monday - Saturday (Evening)</div>
+                      <div style={{ fontSize: '12px', color: '#94A3B8' }}>Quiet indoor finishing work only</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#FBBF24' }}>18:00 - 22:00</div>
+                      <div style={{ fontSize: '11px', color: '#94A3B8' }}>Limit: 55.00 dBA</div>
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '10px 14px', backgroundColor: 'rgba(153, 27, 27, 0.25)', borderRadius: 8, border: '1px solid #991B1B', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#FCA5A5' }}>Sundays & Late Night</div>
+                      <div style={{ fontSize: '12px', color: '#F87171' }}>STRICTLY NO WORK. 100% shutdown</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#FCA5A5' }}>22:00 - 08:00</div>
+                      <div style={{ fontSize: '11px', color: '#F87171' }}>Limit: 45.00 dBA</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ACCORDION 2: HOW YOUR REPORT IS HANDLED */}
+          <div
+            style={{
+              backgroundColor: '#1E293B',
+              borderRadius: 10,
+              border: '1px solid #334155',
+              overflow: 'hidden',
+              transition: 'border-color 0.15s ease',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => toggleAccordion('handling')}
+              style={{
+                width: '100%',
+                padding: '16px 20px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                textAlign: 'left',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: '16px' }}>⚖️</span>
+                <span style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF' }}>
+                  How Your Report Is Handled
+                </span>
+              </div>
+              <span style={{ fontSize: '20px', fontWeight: 800, color: '#F59E0B' }}>
+                {openAccordions.handling ? '−' : '+'}
+              </span>
+            </button>
+
+            {openAccordions.handling && (
+              <div
+                style={{
+                  padding: '16px 20px 20px',
+                  borderTop: '1px solid #334155',
+                  backgroundColor: '#0F172A',
+                }}
+              >
+                <p style={{ fontSize: '12px', color: '#94A3B8', margin: '0 0 12px 0' }}>
+                  Every complaint is officially logged and tracked until resolved on site:
+                </p>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                    <span style={{ backgroundColor: '#312E81', color: '#A5B4FC', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
+                      1
+                    </span>
+                    <div style={{ fontSize: '13px', color: '#E2E8F0' }}>
+                      <strong style={{ color: '#FFFFFF' }}>Site Environmental Officer Alert:</strong> The licensed officer receives your notification and checks boundary sound sensors immediately.
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                    <span style={{ backgroundColor: '#312E81', color: '#A5B4FC', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
+                      2
+                    </span>
+                    <div style={{ fontSize: '13px', color: '#E2E8F0' }}>
+                      <strong style={{ color: '#FFFFFF' }}>Immediate On-Site Action:</strong> The team investigates the noise source (e.g. idling truck, unshielded tool) and adjusts or turns it off within 30 minutes.
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                    <span style={{ backgroundColor: '#312E81', color: '#A5B4FC', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
+                      3
+                    </span>
+                    <div style={{ fontSize: '13px', color: '#E2E8F0' }}>
+                      <strong style={{ color: '#FFFFFF' }}>Resolution Updated in Public Log:</strong> What was done to fix the issue is posted in the log below so you can verify the result.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ACCORDION 3: RECENT COMMUNITY FEEDBACK & ACTIONS TAKEN */}
           <div
             style={{
               backgroundColor: '#1E293B',
@@ -523,168 +503,6 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
 
                 <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid #334155', fontSize: '12px', color: '#94A3B8' }}>
                   💡 <strong>On-Site Fast Resolution:</strong> Issues reported here are resolved directly on-site to preserve neighborhood tranquility.
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ACCORDION 2: PERMITTED CONSTRUCTION WORKING HOURS */}
-          <div
-            style={{
-              backgroundColor: '#1E293B',
-              borderRadius: 10,
-              border: '1px solid #334155',
-              overflow: 'hidden',
-              transition: 'border-color 0.15s ease',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => toggleAccordion('hours')}
-              style={{
-                width: '100%',
-                padding: '16px 20px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                backgroundColor: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                textAlign: 'left',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: '16px' }}>🕒</span>
-                <span style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF' }}>
-                  Permitted Construction Working Hours (MBSA / DOE)
-                </span>
-              </div>
-              <span style={{ fontSize: '20px', fontWeight: 800, color: '#F59E0B' }}>
-                {openAccordions.hours ? '−' : '+'}
-              </span>
-            </button>
-
-            {openAccordions.hours && (
-              <div
-                style={{
-                  padding: '16px 20px 20px',
-                  borderTop: '1px solid #334155',
-                  backgroundColor: '#0F172A',
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <div style={{ padding: '10px 14px', backgroundColor: '#1E293B', borderRadius: 8, border: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#F8FAFC' }}>Monday - Saturday (Daytime)</div>
-                      <div style={{ fontSize: '12px', color: '#94A3B8' }}>Normal construction, cranes, and hoists</div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#4ADE80' }}>08:00 - 18:00</div>
-                      <div style={{ fontSize: '11px', color: '#94A3B8' }}>Limit: 60.00 dBA</div>
-                    </div>
-                  </div>
-
-                  <div style={{ padding: '10px 14px', backgroundColor: '#1E293B', borderRadius: 8, border: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#F8FAFC' }}>Monday - Saturday (Evening)</div>
-                      <div style={{ fontSize: '12px', color: '#94A3B8' }}>Quiet indoor finishing work only</div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#FBBF24' }}>18:00 - 22:00</div>
-                      <div style={{ fontSize: '11px', color: '#94A3B8' }}>Limit: 55.00 dBA</div>
-                    </div>
-                  </div>
-
-                  <div style={{ padding: '10px 14px', backgroundColor: 'rgba(153, 27, 27, 0.25)', borderRadius: 8, border: '1px solid #991B1B', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#FCA5A5' }}>Sundays & Late Night</div>
-                      <div style={{ fontSize: '12px', color: '#F87171' }}>STRICTLY NO WORK. 100% shutdown</div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#FCA5A5' }}>22:00 - 08:00</div>
-                      <div style={{ fontSize: '11px', color: '#F87171' }}>Limit: 45.00 dBA</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ACCORDION 3: HOW YOUR REPORT IS HANDLED */}
-          <div
-            style={{
-              backgroundColor: '#1E293B',
-              borderRadius: 10,
-              border: '1px solid #334155',
-              overflow: 'hidden',
-              transition: 'border-color 0.15s ease',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => toggleAccordion('handling')}
-              style={{
-                width: '100%',
-                padding: '16px 20px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                backgroundColor: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                textAlign: 'left',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: '16px' }}>⚖️</span>
-                <span style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF' }}>
-                  How Your Report Is Handled
-                </span>
-              </div>
-              <span style={{ fontSize: '20px', fontWeight: 800, color: '#F59E0B' }}>
-                {openAccordions.handling ? '−' : '+'}
-              </span>
-            </button>
-
-            {openAccordions.handling && (
-              <div
-                style={{
-                  padding: '16px 20px 20px',
-                  borderTop: '1px solid #334155',
-                  backgroundColor: '#0F172A',
-                }}
-              >
-                <p style={{ fontSize: '12px', color: '#94A3B8', margin: '0 0 12px 0' }}>
-                  Every complaint is officially logged and tracked until resolved on site:
-                </p>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                    <span style={{ backgroundColor: '#312E81', color: '#A5B4FC', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
-                      1
-                    </span>
-                    <div style={{ fontSize: '13px', color: '#E2E8F0' }}>
-                      <strong style={{ color: '#FFFFFF' }}>Site Environmental Officer Alert:</strong> The licensed officer receives your notification and checks boundary sound sensors immediately.
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                    <span style={{ backgroundColor: '#312E81', color: '#A5B4FC', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
-                      2
-                    </span>
-                    <div style={{ fontSize: '13px', color: '#E2E8F0' }}>
-                      <strong style={{ color: '#FFFFFF' }}>Immediate On-Site Action:</strong> The team investigates the noise source (e.g. idling truck, unshielded tool) and adjusts or turns it off within 30 minutes.
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                    <span style={{ backgroundColor: '#312E81', color: '#A5B4FC', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
-                      3
-                    </span>
-                    <div style={{ fontSize: '13px', color: '#E2E8F0' }}>
-                      <strong style={{ color: '#FFFFFF' }}>Resolution Updated in Public Log:</strong> What was done to fix the issue is posted in the log above so you can verify the result.
-                    </div>
-                  </div>
                 </div>
               </div>
             )}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import logoImg from '../assets/BUILDWITHGEEKS LOGO.png';
 import { ACCOUNTS } from '../data/accounts';
 
 export default function Login({ onLogin }) {
@@ -16,7 +17,10 @@ export default function Login({ onLogin }) {
   return (
     <div className="login">
       <section className="login-brand">
-        <div className="brand-row"><span className="brand-mark">GP</span>GreenPulse for Sime Darby Property</div>
+        <div className="brand-row">
+          <img src={logoImg} alt="GreenPulse" style={{ height: '34px', width: 'auto', display: 'block' }} />
+          <span style={{ color: '#cbd5e1', fontSize: '14px', fontWeight: 500 }}>for Sime Darby Property</span>
+        </div>
         <div>
           <h1>Run the site on sun and battery. Keep the genset off.</h1>
           <p>Daily power plan for the M&E team, DOE noise logs for the Environmental Officer, and diesel savings for HQ. Works on top of the IESS and Solis systems already on site.</p>

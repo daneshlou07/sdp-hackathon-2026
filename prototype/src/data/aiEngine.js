@@ -133,7 +133,7 @@ export function getEchoShieldAttribution() {
     complianceMarginDba: 5.9,
     status: 'COMPLIANT (False Exceedance Prevented)',
     aiExplanation:
-      'EchoShield Acoustic AI detected a momentary 71.4 dBA spike at 11:32 AM. Spectral decomposition identified an external 16-tonne diesel dump truck on Persiaran Putra Perdana. Subtraction of external soundscape proves true site boundary noise remained 54.1 dBA, safely below the 60 dBA statutory DOE Schedule 6 limit.',
+      'EchoShield Acoustic AI detected a momentary 71.4 dBA spike at 11:32 AM. Spectral decomposition identified an external 16-tonne diesel dump truck on Persiaran Elmina. Subtraction of external soundscape proves true site boundary noise remained 54.1 dBA, safely below the 60 dBA statutory DOE Schedule 6 limit.',
   };
 }
 
@@ -182,7 +182,7 @@ export const AI_QUICK_PROMPTS = {
     {
       id: 'hq-2',
       title: '10-Year Township Fleet Relocation',
-      query: 'Evaluate capital payback and asset relocation schedule from Putra Heights to Elmina West.',
+      query: 'Evaluate capital payback and asset relocation schedule across City of Elmina, Serenia City, and Bandar Bukit Raja.',
     },
     {
       id: 'hq-3',
@@ -262,7 +262,7 @@ export function solveAiQuery(role, promptId) {
             'Legal Reference: Environmental Quality Act 1974 (Act 127) & Planning Guidelines for Environmental Noise Limits (Schedule 6).',
             'Acoustic Attenuation: Site electrification achieves a measured -27.9 dBA noise reduction relative to conventional 82 dBA diesel generators.',
             'Clean Air Verification: Environmental Quality (Clean Air) Regulations 2014 zero-emission compliance confirmed (0% Ringelmann smoke opacity, zero PM2.5/PM10 diesel exhaust).',
-            'Community Relations: Zero public complaints logged across 30-day operating period within Putra Heights residential buffer.',
+            'Community Relations: Zero public complaints logged across 30-day operating period within City of Elmina residential buffer.',
           ],
           actionBadge: 'Ready for Monthly EMP Attachment',
         };
@@ -303,8 +303,8 @@ export function solveAiQuery(role, promptId) {
           tag: 'Fleet Optimization AI',
           summary: 'Sequential redeployment across 3 township phases unlocks RM 9.84 Million cumulative net value.',
           points: [
-            'Phase 1: Putra Heights High-Rise (2026 - 2028, 24 mos) -> RM 3.00M gross savings; amortises initial RM 350k container capex.',
-            'Phase 2: City of Elmina West Commercial Hub (2028 - 2031, 36 mos) -> RM 4.50M gross savings on zero-depreciation asset.',
+            'Phase 1: City of Elmina (2026 - 2028, 24 mos) -> RM 3.00M gross savings; amortises initial RM 350k container capex.',
+            'Phase 2: Serenia City (2028 - 2031, 36 mos) -> RM 4.50M gross savings on zero-depreciation asset.',
             'Phase 3: Bandar Bukit Raja Industrial Park (2031 - 2036, 60 mos) -> RM 7.51M gross savings.',
             'Cell Health: LFP chemistry sustains 4,500 equivalent cycles over 10 years, retaining 76% State of Health (SoH) at Year 10.',
           ],

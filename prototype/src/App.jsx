@@ -21,7 +21,7 @@ export default function App() {
       {
         id: Date.now(),
         date: new Date().toISOString().split('T')[0],
-        site: 'putra',
+        site: 'elmina',
         who: newC.who,
         issue: newC.issue,
         action: newC.action || '',
@@ -36,10 +36,10 @@ export default function App() {
       prev.map((c) =>
         c.id === id
           ? {
-              ...c,
-              action: resolutionText || 'Inspected perimeter; confirmed clean power baseline.',
-              closed: true,
-            }
+            ...c,
+            action: resolutionText || 'Inspected perimeter; confirmed clean power baseline.',
+            closed: true,
+          }
           : c
       )
     );

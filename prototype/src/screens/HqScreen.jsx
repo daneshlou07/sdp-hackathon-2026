@@ -17,9 +17,9 @@ export default function HqScreen({ user, sites = [], onAddSite, onLogout }) {
 
   // Transfer approvals state
   const [transfers, setTransfers] = useState({
-    putra: 'Pending Approval',
-    melati: 'Pending Approval',
-    rimbayu: 'Permanent Station',
+    elmina: 'Pending Approval',
+    serenia: 'Pending Approval',
+    bukitraja: 'Pending Approval',
   });
 
   // Pre-Tender Sizing Calculator State
@@ -31,8 +31,8 @@ export default function HqScreen({ user, sites = [], onAddSite, onLogout }) {
 
   // Form State for Adding New Site
   const [newSite, setNewSite] = useState({
-    name: 'City of Elmina - Elmina Ridge Phase 2',
-    short: 'Elmina Ridge',
+    name: 'KL East - The Ridge Phase 3',
+    short: 'KL East Ridge',
     contractor: 'TCS Construction Sdn Bhd',
     bessKWh: 522,
     bessKW: 400,
@@ -392,15 +392,15 @@ The Main Contractor shall deploy a Containerized Battery Energy Storage System (
                   <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
                     <td style={{ padding: '10px 8px', fontWeight: 700 }}>Unit BESS-01</td>
                     <td style={{ padding: '10px 8px' }}>261 kWh / 200 kW</td>
-                    <td style={{ padding: '10px 8px' }}>Putra Heights Development</td>
+                    <td style={{ padding: '10px 8px' }}>City of Elmina</td>
                     <td style={{ padding: '10px 8px' }}>Dec 2026 (Substation on-line)</td>
-                    <td style={{ padding: '10px 8px', fontWeight: 600 }}>{FLEET_NEXT.putra.next}</td>
+                    <td style={{ padding: '10px 8px', fontWeight: 600 }}>{FLEET_NEXT.elmina.next}</td>
                     <td style={{ padding: '10px 8px' }}>
-                      {transfers.putra.includes('Approved') ? (
-                        <span className="tag ok">{transfers.putra}</span>
+                      {transfers.elmina.includes('Approved') ? (
+                        <span className="tag ok">{transfers.elmina}</span>
                       ) : (
                         <button
-                          onClick={() => handleApproveTransfer('putra')}
+                          onClick={() => handleApproveTransfer('elmina')}
                           style={{
                             padding: '4px 8px',
                             backgroundColor: '#0F766E',
@@ -421,15 +421,15 @@ The Main Contractor shall deploy a Containerized Battery Energy Storage System (
                   <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
                     <td style={{ padding: '10px 8px', fontWeight: 700 }}>Unit BESS-02</td>
                     <td style={{ padding: '10px 8px' }}>522 kWh / 400 kW</td>
-                    <td style={{ padding: '10px 8px' }}>Melati Development</td>
+                    <td style={{ padding: '10px 8px' }}>Serenia City</td>
                     <td style={{ padding: '10px 8px' }}>Aug 2027 (Compact sub on-line)</td>
-                    <td style={{ padding: '10px 8px', fontWeight: 600 }}>{FLEET_NEXT.melati.next}</td>
+                    <td style={{ padding: '10px 8px', fontWeight: 600 }}>{FLEET_NEXT.serenia.next}</td>
                     <td style={{ padding: '10px 8px' }}>
-                      {transfers.melati.includes('Approved') ? (
-                        <span className="tag ok">{transfers.melati}</span>
+                      {transfers.serenia.includes('Approved') ? (
+                        <span className="tag ok">{transfers.serenia}</span>
                       ) : (
                         <button
-                          onClick={() => handleApproveTransfer('melati')}
+                          onClick={() => handleApproveTransfer('serenia')}
                           style={{
                             padding: '4px 8px',
                             backgroundColor: '#0F766E',
@@ -450,11 +450,29 @@ The Main Contractor shall deploy a Containerized Battery Energy Storage System (
                   <tr>
                     <td style={{ padding: '10px 8px', fontWeight: 700 }}>Unit BESS-03</td>
                     <td style={{ padding: '10px 8px' }}>261 kWh / 260 kW</td>
-                    <td style={{ padding: '10px 8px' }}>Bandar Rimbayu CLQ</td>
-                    <td style={{ padding: '10px 8px' }}>Permanent Off-Grid Site</td>
-                    <td style={{ padding: '10px 8px', fontWeight: 600 }}>{FLEET_NEXT.rimbayu.next}</td>
+                    <td style={{ padding: '10px 8px' }}>Bandar Bukit Raja</td>
+                    <td style={{ padding: '10px 8px' }}>Nov 2027 (Substation energized)</td>
+                    <td style={{ padding: '10px 8px', fontWeight: 600 }}>{FLEET_NEXT.bukitraja.next}</td>
                     <td style={{ padding: '10px 8px' }}>
-                      <span className="tag">Permanent Station</span>
+                      {transfers.bukitraja.includes('Approved') ? (
+                        <span className="tag ok">{transfers.bukitraja}</span>
+                      ) : (
+                        <button
+                          onClick={() => handleApproveTransfer('bukitraja')}
+                          style={{
+                            padding: '4px 8px',
+                            backgroundColor: '#0F766E',
+                            color: '#fff',
+                            borderRadius: 6,
+                            border: 'none',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Authorize Move
+                        </button>
+                      )}
                     </td>
                   </tr>
                 </tbody>

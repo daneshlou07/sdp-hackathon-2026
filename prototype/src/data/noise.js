@@ -35,5 +35,5 @@ export function history(site, days = 30) {
 }
 
 export const SEED_COMPLAINTS = [
-  { id: 1, date: '2026-10-02', site: 'putra', who: 'Resident, Jalan Putra Perdana 5', issue: 'Hoist noise before 8 AM', action: 'Hoist start moved to 8 AM', closed: true },
+  { id: 1, date: '2026-10-02', site: 'elmina', who: 'Resident, Elmina Green 3', issue: 'Hoist noise before 8 AM', action: 'Hoist start moved to 8 AM', closed: true },
 ];

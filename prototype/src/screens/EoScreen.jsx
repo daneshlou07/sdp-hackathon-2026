@@ -63,7 +63,7 @@ const INITIAL_COMPLAINTS = [
   {
     id: 1,
     date: '2026-10-19',
-    who: 'Resident (Damayan Block C)',
+    who: 'Resident (Elmina Green Phase 3)',
     issue: 'Mud tracked onto public road by tipper trucks leaving site.',
     action: 'Dispatched site water bowser to wash public road within 15 minutes. Increased wash bay water pressure.',
     closed: true,
@@ -71,7 +71,7 @@ const INITIAL_COMPLAINTS = [
   {
     id: 2,
     date: '2026-10-17',
-    who: 'Neighbour (Jalan Putra 3)',
+    who: 'Neighbour (Kanopi Residences Buffer)',
     issue: 'Noise heard at 11:00 PM near residential boundary.',
     action: 'Verified GreenPulse battery was silent and generator was 100% locked off. Noise was external road repair by local council.',
     closed: true,
@@ -79,7 +79,7 @@ const INITIAL_COMPLAINTS = [
   {
     id: 3,
     date: '2026-10-14',
-    who: 'City Council (MBSJ) Inspector',
+    who: 'City Council (MBSA) Inspector',
     issue: 'Requested silt trap inspection records ahead of rainy season.',
     action: 'Provided digital weekly desilting log and turbidity sensor history showing 18.20 NTU (well within 50 NTU limit).',
     closed: true,
@@ -97,7 +97,7 @@ export default function EoScreen({
   sites = SITES,
   onLogout,
 }) {
-  const [siteId, setSiteId] = useState('putra');
+  const [siteId, setSiteId] = useState('elmina');
   const [activeTab, setActiveTab] = useState('water');
   const [hour, setHour] = useState(11);
   const [showReportModal, setShowReportModal] = useState(false);
@@ -645,7 +645,7 @@ export default function EoScreen({
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Resident (Jalan Putra 2)"
+                    placeholder="e.g. Resident (Elmina Green 3)"
                     value={newComplaint.who}
                     onChange={(e) => setNewComplaint({ ...newComplaint, who: e.target.value })}
                     style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #CBD5E1', fontSize: '13px' }}

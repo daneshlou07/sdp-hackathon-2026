@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import logoImg from '../assets/BUILDWITHGEEKS LOGO.png';
 import { SITES } from '../data/sites';
 
 export default function Shell({
@@ -27,11 +28,12 @@ export default function Shell({
       {/* Mobile Top Header (Hidden on Desktop) */}
       <header className="mobile-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span className="brand-mark">GP</span>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: '15px', color: '#FFFFFF', lineHeight: 1.1 }}>GreenPulse</div>
-            <div style={{ fontSize: '11px', color: '#94A3B8' }}>{area}</div>
-          </div>
+          <img
+            src={logoImg}
+            alt="GreenPulse"
+            style={{ height: '26px', width: 'auto', display: 'block' }}
+          />
+          <div style={{ fontSize: '11px', color: '#8EA39C', fontWeight: 600 }}>{area}</div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -79,13 +81,16 @@ export default function Shell({
       {/* Desktop Sidebar & Mobile Slide-over Drawer */}
       <aside className={`side ${mobileMenuOpen ? 'mobile-open' : ''}`} aria-label="Sidebar">
         {/* Brand & Area */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <div className="brand-row">
-              <span className="brand-mark">GP</span>
-              <span>GreenPulse</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
+          <div style={{ width: '100%', textAlign: 'left' }}>
+            <div className="brand-row" style={{ justifyContent: 'flex-start', padding: '0 6px' }}>
+              <img
+                src={logoImg}
+                alt="GreenPulse"
+                style={{ height: '36px', width: 'auto', display: 'block' }}
+              />
             </div>
-            <div className="side-label" style={{ marginTop: 6 }}>
+            <div className="side-label" style={{ marginTop: 8, textAlign: 'left', color: '#8EA39C' }}>
               {area}
             </div>
           </div>
@@ -93,12 +98,13 @@ export default function Shell({
             <button
               onClick={() => setMobileMenuOpen(false)}
               className="btn btn-ghost"
-              style={{ color: '#fff', borderColor: '#334155', padding: '4px 10px', fontSize: 12 }}
+              style={{ color: '#FFFFFF', borderColor: '#334D46', padding: '4px 10px', fontSize: 12, backgroundColor: '#1C2A27' }}
             >
               ✕ Close
             </button>
           )}
         </div>
+
 
         {/* Site Picker (for M&E and EO) or Scope (for HQ) */}
         {showSites ? (
@@ -145,21 +151,37 @@ export default function Shell({
                   key={t.id}
                   id={`tab-${t.id}`}
                   onClick={() => handleTabSelect(t.id)}
+                  className={`side-nav-btn ${isSelected ? 'active' : ''}`}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '10px',
                     width: '100%',
-                    padding: '8px 12px',
+                    padding: '10px 14px',
                     borderRadius: '8px',
                     fontSize: '13px',
                     fontWeight: isSelected ? 700 : 500,
                     textAlign: 'left',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
-                    border: isSelected ? '1px solid #0F766E' : '1px solid transparent',
-                    backgroundColor: isSelected ? 'rgba(15, 118, 110, 0.15)' : 'transparent',
-                    color: isSelected ? '#FFFFFF' : '#94A3B8',
+                    border: isSelected ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid transparent',
+                    background: isSelected
+                      ? 'linear-gradient(135deg, #2E7D5B 0%, #206246 100%)'
+                      : 'transparent',
+                    color: isSelected ? '#FFFFFF' : '#A3B8B0',
+                    boxShadow: isSelected ? '0 4px 14px rgba(46, 125, 91, 0.4)' : 'none',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.backgroundColor = '#1C2A27';
+                      e.currentTarget.style.color = '#FFFFFF';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = '#A3B8B0';
+                    }
                   }}
                 >
                   <span style={{ fontSize: '15px' }}>{t.icon || '•'}</span>
@@ -174,12 +196,20 @@ export default function Shell({
         <div>
           <div className="side-label">Live Site Telemetry</div>
           <div className="pills">
-            {pills.map((p) => (
-              <div className="pill" key={p.k}>
-                <span>{p.k}</span>
-                <b className={p.tone}>{p.v}</b>
-              </div>
-            ))}
+            {pills.map((p) => {
+              const isSoc = p.k === 'Battery SoC';
+              return (
+                <div className="pill" key={p.k}>
+                  <span>{p.k}</span>
+                  <b
+                    className={p.tone}
+                    style={isSoc ? { color: '#F07A2A' } : undefined}
+                  >
+                    {p.v}
+                  </b>
+                </div>
+              );
+            })}
           </div>
         </div>
 

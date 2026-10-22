@@ -18,6 +18,11 @@ prototype/.env
 npm-debug.log*
 yarn-debug.log*
 
+# Python
+.venv/
+__pycache__/
+*.pyc
+
 # Editor directories
 .vscode/
 .idea/
