@@ -309,9 +309,7 @@ export function TopKpiCards({ site, now, day, currentHour, gensetNow }) {
             {gensetNow ? 'RUNNING' : 'OFF'}
           </span>
         </div>
-        <div style={{ fontSize: '11px', color: '#64748B', margin: '4px 0 0' }}>
-          {gensetNow ? `${fmt(now.genset)} kW supplying site` : '0 L fuel used'}
-        </div>
+
 
         {/* Faded background icon watermark */}
         <div
