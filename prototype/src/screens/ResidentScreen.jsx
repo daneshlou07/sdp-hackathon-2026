@@ -436,18 +436,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                 <span style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF' }}>
                   Recent Community Feedback & Actions Taken
                 </span>
-                <span
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                    color: '#93C5FD',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    padding: '2px 8px',
-                    borderRadius: 999,
-                  }}
-                >
-                  {complaints.length} Logged
-                </span>
+
               </div>
               <span style={{ fontSize: '20px', fontWeight: 800, color: '#FDE047' }}>
                 {openAccordions.feedback ? '−' : '+'}
