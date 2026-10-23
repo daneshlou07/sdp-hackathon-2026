@@ -116,10 +116,10 @@ async function fetchFromGoogleWeatherApi(lat, lon, apiKey) {
       const isToday = idx === 0;
       const isTomorrow = idx === 1;
       const dayLabel = isToday ? 'Today' : isTomorrow ? 'Tomorrow' : dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-      const maxTemp = Math.round(fd.maxTemperature?.degrees || 33);
-      const minTemp = Math.round(fd.minTemperature?.degrees || 25);
-      const cond = fd.daytimeForecast?.weatherCondition?.description?.text || 'Thunderstorm';
-      const type = fd.daytimeForecast?.weatherCondition?.type || '';
+      const maxTemp = isToday ? currentTemp : Math.round(fd.maxTemperature?.degrees || 33);
+      const minTemp = isToday ? Math.min(Math.round(fd.minTemperature?.degrees || 25), currentTemp) : Math.round(fd.minTemperature?.degrees || 25);
+      const cond = isToday ? conditionText : (fd.daytimeForecast?.weatherCondition?.description?.text || 'Thunderstorm');
+      const type = isToday ? conditionType : (fd.daytimeForecast?.weatherCondition?.type || '');
       const rain = Math.max(
         fd.daytimeForecast?.thunderstormProbability || 0,
         fd.daytimeForecast?.precipitation?.probability?.percent || 0
@@ -132,7 +132,7 @@ async function fetchFromGoogleWeatherApi(lat, lon, apiKey) {
         conditionText: cond,
         conditionType: type,
         emoji: getWeatherEmoji(type, cond),
-        rainProbability: Math.max(rain, 60),
+        rainProbability: isToday ? Math.max(rain, precipitationProb || 0) : Math.max(rain, 60),
         stormStart: idx === 0 ? stormStart : (13 + (idx % 2)),
         stormEnd: idx === 0 ? stormEnd : (16 + (idx % 2)),
       };
@@ -251,12 +251,12 @@ async function fetchFromLiveMeteoApi(lat, lon) {
     return {
       dayLabel,
       dateFormatted: dayItem.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      maxTemp: dayItem.maxTemp,
-      minTemp: dayItem.minTemp,
-      conditionText: dayCond.text,
-      conditionType: dayCond.type,
-      emoji: getWeatherEmoji(dayCond.type, dayCond.text),
-      rainProbability: dayItem.rain,
+      maxTemp: isToday ? currentTemp : dayItem.maxTemp,
+      minTemp: isToday ? Math.min(dayItem.minTemp, currentTemp) : dayItem.minTemp,
+      conditionText: isToday ? cond.text : dayCond.text,
+      conditionType: isToday ? cond.type : dayCond.type,
+      emoji: isToday ? getWeatherEmoji(cond.type, cond.text) : getWeatherEmoji(dayCond.type, dayCond.text),
+      rainProbability: isToday ? Math.max(precipitationProb || 0, dayItem.rain) : dayItem.rain,
       stormStart: idx === 0 ? stormStart : (13 + (idx % 2)),
       stormEnd: idx === 0 ? stormEnd : (16 + (idx % 2)),
     };
@@ -436,7 +436,7 @@ export async function fetchLiveSiteWeather(site) {
       fallbackDays.push({
         dayLabel,
         dateFormatted: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        maxTemp: 32 - (i % 2),
+        maxTemp: i === 0 ? 27 : (32 - (i % 2)),
         minTemp: 24,
         conditionText: i % 2 === 0 ? 'Heavy Thunderstorm' : 'Afternoon Storm',
         conditionType: 'THUNDERSTORM',

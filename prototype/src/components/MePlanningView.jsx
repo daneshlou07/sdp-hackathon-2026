@@ -120,6 +120,9 @@ export default function MePlanningView({
             {dailyForecastList.map((d, i) => {
               const isSelected = i === selectedDayIndex;
               const buttonEmoji = (i === 0 && liveWeather?.emoji) ? liveWeather.emoji : (d.emoji || '⛈️');
+              const liveTemp = liveWeather?.currentTemp ?? liveWeather?.temp;
+              const buttonMaxTemp = (i === 0 && liveTemp != null) ? liveTemp : d.maxTemp;
+              const buttonMinTemp = (i === 0 && liveTemp != null) ? Math.min(d.minTemp, liveTemp) : d.minTemp;
               return (
                 <button
                   type="button"
@@ -148,7 +151,7 @@ export default function MePlanningView({
                   </div>
                   <div style={{ fontSize: '24px', margin: '4px 0' }}>{buttonEmoji}</div>
                   <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>
-                    {d.maxTemp}° <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 500 }}>{d.minTemp}°</span>
+                    {buttonMaxTemp}° <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 500 }}>{buttonMinTemp}°</span>
                   </div>
                   <div style={{ fontSize: '10px', color: d.rainProbability >= 60 ? '#0284C7' : '#64748B', fontWeight: 700, marginTop: '2px' }}>
                     {d.rainProbability}%
@@ -170,9 +173,7 @@ export default function MePlanningView({
           <div style={{ fontSize: '26px', fontWeight: 800, color: '#15803D', letterSpacing: '-0.02em' }}>
             {dailySavings.avoidedL} <small style={{ fontSize: '14px', fontWeight: 600 }}>Litres</small>
           </div>
-          <div style={{ fontSize: '11px', color: '#64748B', marginTop: '4px' }}>
-            Zero tanker runs required today
-          </div>
+
         </div>
 
         <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px 18px', boxShadow: '0 2px 6px rgba(0, 0, 0, 0.03)' }}>
@@ -197,7 +198,7 @@ export default function MePlanningView({
             {dailySavings.cleanShare}%
           </div>
           <div style={{ fontSize: '11px', color: '#64748B', marginTop: '4px' }}>
-            Supplied via Solar + MegaBatt BESS
+            Solar and battery power
           </div>
         </div>
 
@@ -209,9 +210,7 @@ export default function MePlanningView({
           <div style={{ fontSize: '26px', fontWeight: 800, color: '#059669', letterSpacing: '-0.02em' }}>
             100% OFF
           </div>
-          <div style={{ fontSize: '11px', color: '#64748B', marginTop: '4px' }}>
-            Autonomous zero-emission lockout
-          </div>
+
         </div>
       </div>
 
@@ -228,11 +227,9 @@ export default function MePlanningView({
       >
         <div style={{ marginBottom: '16px' }}>
           <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A', margin: '0 0 4px 0' }}>
-            Autonomous Equipment Dispatch Plan ({activeForecastDay.dayLabel})
+            Equipment Operating Schedule ({activeForecastDay.dayLabel})
           </h3>
-          <p style={{ margin: 0, fontSize: '13px', color: '#64748B' }}>
-            Predictive AI aligns heavy loads with peak solar generation and auto-pauses external lifts during monsoon rain.
-          </p>
+
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '14px' }}>
@@ -240,22 +237,19 @@ export default function MePlanningView({
           <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #E2E8F0' }}>
               <span style={{ fontSize: '14px' }}>🟢</span>
-              <span style={{ fontSize: '13px', fontWeight: 800, color: '#0F766E' }}>Charge on Peak Solar</span>
+              <span style={{ fontSize: '13px', fontWeight: 800, color: '#0F766E' }}>Solar Charging</span>
             </div>
 
             {equipmentPlan.chargeSolar.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {equipmentPlan.chargeSolar.map((eq) => (
                   <div key={eq.id} style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '10px 12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>{eq.name}</span>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B' }}>{eq.kw} kW</span>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>{eq.kw} kW</span>
                     </div>
                     <div style={{ fontSize: '11px', fontWeight: 700, color: '#0F766E' }}>
                       {eq.action}
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#64748B', marginTop: '4px', lineHeight: 1.35 }}>
-                      {eq.slotNote}
                     </div>
                   </div>
                 ))}
@@ -272,7 +266,7 @@ export default function MePlanningView({
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #E2E8F0' }}>
               <span style={{ fontSize: '14px' }}>{equipmentPlan.isRainDay ? '🔴' : '☀️'}</span>
               <span style={{ fontSize: '13px', fontWeight: 800, color: equipmentPlan.isRainDay ? '#DC2626' : '#059669' }}>
-                {equipmentPlan.isRainDay ? 'Pause During Monsoon Rain' : 'All Clear • No Rain Pause'}
+                {equipmentPlan.isRainDay ? 'Paused During Rain' : 'All Clear • No Rain Pause'}
               </span>
             </div>
 
@@ -280,15 +274,12 @@ export default function MePlanningView({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {equipmentPlan.pauseRain.map((eq) => (
                   <div key={eq.id} style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '10px 12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>{eq.name}</span>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B' }}>{eq.kw} kW</span>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>{eq.kw} kW</span>
                     </div>
                     <div style={{ fontSize: '11px', fontWeight: 700, color: '#DC2626' }}>
                       {eq.action}
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#64748B', marginTop: '4px', lineHeight: 1.35 }}>
-                      {eq.slotNote}
                     </div>
                   </div>
                 ))}
@@ -304,22 +295,25 @@ export default function MePlanningView({
           <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #E2E8F0' }}>
               <span style={{ fontSize: '14px' }}>⚡</span>
-              <span style={{ fontSize: '13px', fontWeight: 800, color: '#2563EB' }}>Always Powered (Never Shed)</span>
+              <span style={{ fontSize: '13px', fontWeight: 800, color: '#2563EB' }}>Always Powered</span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {equipmentPlan.alwaysPowered.map((eq) => (
-                <div key={eq.id} style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '10px 12px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>{eq.name}</span>
-                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B' }}>{eq.kw} kW</span>
-                  </div>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#2563EB' }}>
-                    {eq.action}
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#64748B', marginTop: '4px', lineHeight: 1.35 }}>
-                    {eq.slotNote}
-                  </div>
+                <div
+                  key={eq.id}
+                  style={{
+                    background: '#FFFFFF',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '8px',
+                    padding: '11px 14px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>{eq.name}</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>{eq.kw} kW</span>
                 </div>
               ))}
             </div>

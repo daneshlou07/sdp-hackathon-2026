@@ -142,7 +142,7 @@ export const AI_QUICK_PROMPTS = {
   me: [
     {
       id: 'me-1',
-      title: 'Monsoon Storm Simulation',
+      title: 'Rain Storm Simulation',
       query: 'Simulate power balance if a heavy storm strikes between 14:00 and 16:30.',
     },
     {
@@ -198,7 +198,7 @@ export function solveAiQuery(role, promptId) {
     switch (promptId) {
       case 'me-1':
         return {
-          title: 'Monsoon Storm Dispatch Simulation (14:00 - 16:30)',
+          title: 'Rain Storm Dispatch Simulation (14:00 - 16:30)',
           tag: 'DispatchOpt MPC Engine',
           summary: 'Zero generator starts verified. BESS holds 52% reserve at storm conclusion.',
           points: [

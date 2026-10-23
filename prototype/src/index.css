@@ -1385,7 +1385,8 @@ tr:last-child td {
   overflow-y: auto;
 }
 
-.modal-card {
+.modal-card,
+.modal-dialog {
   background-color: #ffffff;
   border-radius: 14px;
   width: 100%;
@@ -1402,10 +1403,14 @@ tr:last-child td {
 .modal-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 18px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--line);
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.modal-header .btn-ghost {
+  border: none;
 }
 
 .modal-actions {
@@ -1421,11 +1426,14 @@ tr:last-child td {
   }
 
   .modal-card,
-  .modal-card * {
+  .modal-card *,
+  .modal-dialog,
+  .modal-dialog * {
     visibility: visible;
   }
 
-  .modal-card {
+  .modal-card,
+  .modal-dialog {
     position: absolute;
     inset: 0;
     max-height: none;

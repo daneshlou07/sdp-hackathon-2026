@@ -73,10 +73,23 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
 
   // 7-day forecast list
   const dailyForecastList = useMemo(() => {
+    const liveTemp = liveWeather?.currentTemp ?? liveWeather?.temp;
     if (liveWeather?.dailyForecast && liveWeather.dailyForecast.length > 0) {
-      return liveWeather.dailyForecast;
+      return liveWeather.dailyForecast.map((d, i) => {
+        if (i === 0 && liveTemp != null) {
+          return {
+            ...d,
+            maxTemp: liveTemp,
+            minTemp: Math.min(d.minTemp ?? liveTemp, liveTemp),
+            emoji: liveWeather.emoji || d.emoji,
+            conditionText: liveWeather.conditionText || d.conditionText,
+          };
+        }
+        return d;
+      });
     }
     const days = [];
+    const baseTemp = liveTemp ?? 27;
     for (let i = 0; i < 7; i++) {
       const d = new Date();
       d.setDate(d.getDate() + i);
@@ -84,7 +97,7 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
       days.push({
         dayLabel,
         dateFormatted: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        maxTemp: 32 - (i % 2),
+        maxTemp: i === 0 ? baseTemp : (32 - (i % 2)),
         minTemp: 24,
         conditionText: i % 2 === 0 ? 'Heavy Thunderstorm' : 'Afternoon Storm',
         conditionType: 'THUNDERSTORM',
@@ -142,20 +155,12 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
             name: eq.name,
             kw: eq.kw,
             action: `Charge ${startH}:00 to ${endH}:00`,
-            slotNote: `Pre-charges to 100% on free solar before the ${stormStart}:00 rain window`,
-            tag: 'Morning Solar Harvest',
-            tagColor: '#0F766E',
-            tagBg: '#F0FDFA',
           });
           pauseRain.push({
             id: eq.id + '-pause',
             name: eq.name,
             kw: eq.kw,
             action: `Paused ${stormStart}:00 to ${Math.ceil(stormEnd)}:30`,
-            slotNote: 'Charging automatically suspended during storm window to preserve battery voltage for tower cranes',
-            tag: 'Auto-Paused',
-            tagColor: '#DC2626',
-            tagBg: '#FEF2F2',
           });
         } else {
           chargeSolar.push({
@@ -163,10 +168,6 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
             name: eq.name,
             kw: eq.kw,
             action: 'Charge 10:00 to 15:30',
-            slotNote: `Low rain probability (${rainProb}%). Runs continuously on peak solar irradiance`,
-            tag: 'Full Solar Window',
-            tagColor: '#0F766E',
-            tagBg: '#F0FDFA',
           });
         }
       } else if (isCritical) {
@@ -174,13 +175,6 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
           id: eq.id,
           name: eq.name,
           kw: eq.kw,
-          action: '100% Continuous Power',
-          slotNote: isRainDay
-            ? 'Protected by MegaBatt BESS. Zero lifting interruptions even if rain cuts solar'
-            : 'Powered seamlessly across daytime solar generation and evening battery storage',
-          tag: 'BESS Protected',
-          tagColor: '#1E40AF',
-          tagBg: '#EFF6FF',
         });
       } else {
         if (isRainDay && eq.kw >= 20) {
@@ -189,21 +183,12 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
             name: eq.name,
             kw: eq.kw,
             action: `Standby ${stormStart}:00 to ${Math.ceil(stormEnd)}:30`,
-            slotNote: 'Secondary high-draw circuit paused during storm cloud cover',
-            tag: 'Storm Buffer',
-            tagColor: '#D97706',
-            tagBg: '#FEF3C7',
           });
         } else {
           alwaysPowered.push({
             id: eq.id,
             name: eq.name,
             kw: eq.kw,
-            action: 'Continuous Normal Load',
-            slotNote: 'Non-interrupted circuit covered within inverter operating threshold',
-            tag: 'Active',
-            tagColor: '#059669',
-            tagBg: '#ECFDF5',
           });
         }
       }
@@ -253,11 +238,9 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
             <div className="card" style={{ padding: '14px 18px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
                 <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
-                  ⏱️ Active Simulation Timeline: <strong style={{ color: '#0F766E' }}>{hour}:00 ({hour < 12 ? `${hour === 0 ? 12 : hour} AM` : `${hour === 12 ? 12 : hour - 12} PM`})</strong>
+                  ⏱️ Live Simulation Timeline: <strong style={{ color: '#0F766E' }}>{hour}:00 ({hour < 12 ? `${hour === 0 ? 12 : hour} AM` : `${hour === 12 ? 12 : hour - 12} PM`})</strong>
                 </span>
-                <span style={{ fontSize: '11px', color: '#64748B' }}>
-                  Drag slider to inspect live solar output, battery charge/discharge & site machinery demand at any hour
-                </span>
+
               </div>
               <input
                 type="range"
@@ -388,16 +371,14 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
       </div>
 
 
-      {/* Connect Machine Circuit Modal */}
+
       {isAddEqModalOpen && (
         <div className="modal-backdrop" onClick={() => setIsAddEqModalOpen(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
-            <div className="modal-header">
-              <div>
-                <h2>Connect Machinery Circuit</h2>
-                <p className="sub">Register sub-contractor machine on BESS distribution board ({site.name})</p>
-              </div>
-              <button className="btn btn-ghost" onClick={() => setIsAddEqModalOpen(false)}>✕</button>
+            <div className="modal-header" style={{ borderBottom: 'none', paddingBottom: 0 }}>
+              <h2 style={{ margin: 0 }}>Add Machinery</h2>
+
+              <button className="btn btn-ghost" style={{ border: 'none', fontSize: '16px', padding: '4px 8px' }} onClick={() => setIsAddEqModalOpen(false)}>✕</button>
             </div>
             <form onSubmit={handleAddEquipment}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -472,7 +453,7 @@ export default function MeScreen({ user, sites = SITES, onLogout }) {
       {/* Google Weather API Key Modal */}
       {isWeatherKeyModalOpen && (
         <div className="modal-backdrop" onClick={() => setIsWeatherKeyModalOpen(false)}>
-          <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
             <div className="modal-header">
               <div>
                 <h3 style={{ margin: 0, fontSize: '16px' }}>Google Maps Platform Weather API</h3>

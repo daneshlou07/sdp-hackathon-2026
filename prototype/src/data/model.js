@@ -6,7 +6,7 @@ export const RESERVE = 0.2; // battery kept above 20% before backup starts
 export const WEATHER = {
   sunny: { label: 'Sunny all day', factor: () => 1 },
   storm: { label: 'Storm 2 PM to 4:30 PM', factor: (h) => (h >= 14 && h <= 16 ? 0.12 : h === 13 ? 0.6 : 1) },
-  monsoon: { label: 'Monsoon, overcast all day', factor: () => 0.25 },
+  monsoon: { label: 'Rainy, overcast all day', factor: () => 0.25 },
 };
 
 // share of days per month, assumption for Klang Valley
@@ -226,7 +226,7 @@ export function planTips(site, weatherKey) {
   if (weatherKey === 'monsoon') {
     tips.push({
       icon: '🌧️',
-      badge: 'Monsoon Mode',
+      badge: 'Rain Mode',
       title: 'Extended Low Sun Forecast',
       body: `Backup genset expected for about ${smart.hours.filter((x) => x.genset > 0).length} hours. Prioritize critical hoist loads.`,
     });

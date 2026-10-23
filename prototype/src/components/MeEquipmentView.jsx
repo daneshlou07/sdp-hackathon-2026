@@ -37,23 +37,9 @@ export default function MeEquipmentView({
               <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: 0, letterSpacing: '-0.01em' }}>
                 Heavy Machinery & Circuit Distribution
               </h2>
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  color: '#047857',
-                  background: '#ECFDF5',
-                  border: '1px solid #A7F3D0',
-                  padding: '2px 8px',
-                  borderRadius: '999px',
-                }}
-              >
-                Inverter Protected
-              </span>
+
             </div>
-            <p style={{ margin: 0, fontSize: '13px', color: '#64748B', lineHeight: 1.4 }}>
-              Active machine circuits connected to the containerized {site.bessKWh} kWh BESS distribution board.
-            </p>
+
           </div>
 
           <button
@@ -91,46 +77,42 @@ export default function MeEquipmentView({
           }}
         >
           <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px' }}>
-            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Active Site Demand</div>
+            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Current Power Demand</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', margin: '2px 0' }}>
               <span style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A' }}>{totalDemand}</span>
               <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>kW</span>
             </div>
             <div style={{ fontSize: '11px', color: '#059669', fontWeight: 600 }}>
-              {Math.round((totalDemand / inverterLimit) * 100)}% of Inverter Limit
+              {Math.round((totalDemand / inverterLimit) * 100)}% capacity used
             </div>
           </div>
 
           <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px' }}>
-            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>BESS Inverter Rating</div>
+            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Inverter Capacity</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', margin: '2px 0' }}>
               <span style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A' }}>{inverterLimit}</span>
               <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>kW</span>
             </div>
-            <div style={{ fontSize: '11px', color: '#64748B' }}>
-              Continuous Inverter Capacity
-            </div>
+
           </div>
 
           <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px' }}>
-            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Available Headroom</div>
+            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Available Capacity</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', margin: '2px 0' }}>
               <span style={{ fontSize: '20px', fontWeight: 800, color: '#2563EB' }}>{headroomKw}</span>
               <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>kW</span>
             </div>
             <div style={{ fontSize: '11px', color: '#1E40AF', fontWeight: 600 }}>
-              {headroomPct}% Inrush Buffer Reserve
+              {headroomPct}% remaining
             </div>
           </div>
 
           <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: '8px', padding: '12px 14px' }}>
-            <div style={{ fontSize: '11px', color: '#065F46', fontWeight: 600 }}>Circuit Safety Status</div>
+            <div style={{ fontSize: '11px', color: '#065F46', fontWeight: 600 }}>Circuit Status</div>
             <div style={{ fontSize: '16px', fontWeight: 800, color: '#047857', margin: '3px 0 2px' }}>
-              Zero Trips Logged
+              No trips recorded
             </div>
-            <div style={{ fontSize: '11px', color: '#059669' }}>
-              Continuous Inrush Management Active
-            </div>
+
           </div>
         </div>
       </div>
@@ -148,11 +130,9 @@ export default function MeEquipmentView({
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-            Active Machinery Feeder Circuits ({allEquipment.length})
+            Active Machinery Circuits ({allEquipment.length})
           </h3>
-          <span style={{ fontSize: '12px', color: '#64748B' }}>
-            Live readings update every 30s
-          </span>
+
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -182,16 +162,7 @@ export default function MeEquipmentView({
                 }}
               >
                 {/* Status Dot */}
-                <div
-                  style={{
-                    width: '10px',
-                    height: '10px',
-                    borderRadius: '50%',
-                    backgroundColor: isRunning ? '#10B981' : '#94A3B8',
-                    boxShadow: isRunning ? '0 0 8px rgba(16, 185, 129, 0.6)' : 'none',
-                    flexShrink: 0,
-                  }}
-                />
+
 
                 {/* Name & Circuit Port */}
                 <div style={{ minWidth: '220px', flex: '1 1 220px' }}>
@@ -215,9 +186,7 @@ export default function MeEquipmentView({
                       </span>
                     )}
                   </div>
-                  <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>
-                    Rated Capacity: {eq.kw} kW &bull; {isRunning ? 'Running on BESS power' : 'Circuit idle / Standby'}
-                  </div>
+
                 </div>
 
                 {/* Priority Tier Chip */}
@@ -287,21 +256,7 @@ export default function MeEquipmentView({
           })}
         </div>
 
-        {/* Technical Safety Note */}
-        <div
-          style={{
-            marginTop: '16px',
-            padding: '12px 14px',
-            backgroundColor: '#F8FAFC',
-            border: '1px solid #E2E8F0',
-            borderRadius: '8px',
-            fontSize: '12px',
-            color: '#475569',
-            lineHeight: 1.5,
-          }}
-        >
-          💡 <strong>Continuous Inrush Buffer:</strong> The {site.bessKW} kW BESS inverter absorbs heavy motor startup spikes (cranes and passenger hoists) in under 5 milliseconds without voltage drop, eliminating diesel genset stutter or nuisance trips.
-        </div>
+
       </div>
     </div>
   );

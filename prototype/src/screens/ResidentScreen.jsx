@@ -40,13 +40,14 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
       {/* Top Header */}
       <header
         style={{
-          backgroundColor: '#0F172A',
+          background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
           color: '#FFFFFF',
           padding: '16px 24px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          borderBottom: '1px solid #1E293B',
+          borderBottom: '1px solid #334155',
+          boxShadow: '0 4px 14px rgba(15, 23, 42, 0.25)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -243,11 +244,12 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
           {/* ACCORDION 1: PERMITTED CONSTRUCTION WORKING HOURS */}
           <div
             style={{
-              backgroundColor: '#1E293B',
+              background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
               borderRadius: 10,
               border: '1px solid #334155',
               overflow: 'hidden',
-              transition: 'border-color 0.15s ease',
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.18)',
+              transition: 'all 0.15s ease',
             }}
           >
             <button
@@ -259,7 +261,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                backgroundColor: 'transparent',
+                background: 'transparent',
                 border: 'none',
                 cursor: 'pointer',
                 textAlign: 'left',
@@ -271,7 +273,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                   Permitted Construction Working Hours
                 </span>
               </div>
-              <span style={{ fontSize: '20px', fontWeight: 800, color: '#F59E0B' }}>
+              <span style={{ fontSize: '20px', fontWeight: 800, color: '#FDE047' }}>
                 {openAccordions.hours ? '−' : '+'}
               </span>
             </button>
@@ -291,7 +293,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                       <div style={{ fontSize: '12px', color: '#94A3B8' }}>Normal construction, cranes, and hoists</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#4ADE80' }}>08:00 - 18:00</div>
+                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#38BDF8' }}>08:00 - 18:00</div>
                       <div style={{ fontSize: '11px', color: '#94A3B8' }}>Limit: 60.00 dBA</div>
                     </div>
                   </div>
@@ -325,11 +327,12 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
           {/* ACCORDION 2: HOW YOUR REPORT IS HANDLED */}
           <div
             style={{
-              backgroundColor: '#1E293B',
+              background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
               borderRadius: 10,
               border: '1px solid #334155',
               overflow: 'hidden',
-              transition: 'border-color 0.15s ease',
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.18)',
+              transition: 'all 0.15s ease',
             }}
           >
             <button
@@ -341,7 +344,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                backgroundColor: 'transparent',
+                background: 'transparent',
                 border: 'none',
                 cursor: 'pointer',
                 textAlign: 'left',
@@ -353,7 +356,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                   How Your Report Is Handled
                 </span>
               </div>
-              <span style={{ fontSize: '20px', fontWeight: 800, color: '#F59E0B' }}>
+              <span style={{ fontSize: '20px', fontWeight: 800, color: '#FDE047' }}>
                 {openAccordions.handling ? '−' : '+'}
               </span>
             </button>
@@ -372,7 +375,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                    <span style={{ backgroundColor: '#312E81', color: '#A5B4FC', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
+                    <span style={{ backgroundColor: '#1E3A8A', color: '#93C5FD', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
                       1
                     </span>
                     <div style={{ fontSize: '13px', color: '#E2E8F0' }}>
@@ -381,7 +384,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                   </div>
 
                   <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                    <span style={{ backgroundColor: '#312E81', color: '#A5B4FC', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
+                    <span style={{ backgroundColor: '#1E3A8A', color: '#93C5FD', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
                       2
                     </span>
                     <div style={{ fontSize: '13px', color: '#E2E8F0' }}>
@@ -390,7 +393,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                   </div>
 
                   <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                    <span style={{ backgroundColor: '#312E81', color: '#A5B4FC', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
+                    <span style={{ backgroundColor: '#1E3A8A', color: '#93C5FD', fontWeight: 800, fontSize: '11px', padding: '3px 7px', borderRadius: 6, minWidth: 24, textAlign: 'center' }}>
                       3
                     </span>
                     <div style={{ fontSize: '13px', color: '#E2E8F0' }}>
@@ -405,11 +408,12 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
           {/* ACCORDION 3: RECENT COMMUNITY FEEDBACK & ACTIONS TAKEN */}
           <div
             style={{
-              backgroundColor: '#1E293B',
+              background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
               borderRadius: 10,
               border: '1px solid #334155',
               overflow: 'hidden',
-              transition: 'border-color 0.15s ease',
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.18)',
+              transition: 'all 0.15s ease',
             }}
           >
             <button
@@ -421,7 +425,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                backgroundColor: 'transparent',
+                background: 'transparent',
                 border: 'none',
                 cursor: 'pointer',
                 textAlign: 'left',
@@ -434,10 +438,10 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                 </span>
                 <span
                   style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    color: '#94A3B8',
+                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                    color: '#93C5FD',
                     fontSize: '11px',
-                    fontWeight: 600,
+                    fontWeight: 700,
                     padding: '2px 8px',
                     borderRadius: 999,
                   }}
@@ -445,7 +449,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
                   {complaints.length} Logged
                 </span>
               </div>
-              <span style={{ fontSize: '20px', fontWeight: 800, color: '#F59E0B' }}>
+              <span style={{ fontSize: '20px', fontWeight: 800, color: '#FDE047' }}>
                 {openAccordions.feedback ? '−' : '+'}
               </span>
             </button>
@@ -464,7 +468,7 @@ export default function ResidentScreen({ user, complaints = [], onAddComplaint, 
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 320, overflowY: 'auto' }}>
                   {complaints.length === 0 ? (
-                    <div style={{ color: '#64748B', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
+                    <div style={{ color: '#94A3B8', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
                       No active community noise inquiries logged.
                     </div>
                   ) : (

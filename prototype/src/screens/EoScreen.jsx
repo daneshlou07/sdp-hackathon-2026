@@ -11,7 +11,7 @@ import imgFuelBund from '../assets/fuel_bund.jpg';
 const TABS = [
   { id: 'water', label: 'Rain & Silt Runoff', icon: '🌧️' },
   { id: 'noise', label: 'Noise & Dust Limits', icon: '🔊' },
-  { id: 'checklist', label: 'Daily Site Checklist & Photos', icon: '📋' },
+  { id: 'checklist', label: 'Daily Inspection & Photos', icon: '📋' },
   { id: 'complaints', label: 'Complaints & Actions', icon: '📢' },
 ];
 
@@ -234,8 +234,7 @@ export default function EoScreen({
       <div className="top">
         <div>
           <h1>{site.name}: Environmental Monitoring</h1>
-          <p>
-            Site dashboard for water quality, erosion control, and environmental inspections.          </p>
+
         </div>
         <div className="top-meta">
           <button id="open-emp-modal" className="btn btn-primary" onClick={() => setShowReportModal(true)}>
@@ -289,7 +288,7 @@ export default function EoScreen({
 
           {/* Silt Traps & Drainage Status Table */}
           <section className="card">
-            <h2 style={{ fontSize: '16px', margin: '0 0 12px 0' }}>Perimeter Drainage & Silt Trap Monitoring Points</h2>
+            <h2 style={{ fontSize: '16px', margin: '0 0 12px 0' }}>Drainage & Silt Trap Monitoring Points</h2>
             <div className="table-responsive">
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                 <thead>
@@ -829,60 +828,88 @@ export default function EoScreen({
       {/* Statutory Monthly Report Modal */}
       {showReportModal && (
         <div className="modal-backdrop" onClick={() => setShowReportModal(false)}>
-          <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 640 }}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 680, padding: 24 }}>
             <div className="modal-header">
               <div>
-                <h2>Monthly Environmental Monitoring Report</h2>
-                <p className="sub">Statutory compliance submission for Department of Environment (JAS) and Client</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>Monthly Environmental Monitoring Report</h2>
+                  <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: 999, backgroundColor: '#DCFCE7', color: '#15803D' }}>
+                    JAS / DOE COMPLIANT
+                  </span>
+                </div>
+                <p className="sub" style={{ margin: 0, fontSize: '13px', color: '#64748B' }}>
+                  Statutory compliance submission for Department of Environment (JAS) and Client
+                </p>
               </div>
               <button className="btn btn-ghost" onClick={() => setShowReportModal(false)}>✕</button>
             </div>
 
-            <div style={{ padding: '10px 0', fontSize: '13px', lineHeight: 1.5 }}>
-              <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 6, marginBottom: 14 }}>
-                <div><strong>Project:</strong> {site.name}</div>
-                <div><strong>Location:</strong> {site.locationName}</div>
-                <div><strong>Reporting Period:</strong> October 2026 (Monthly Audit)</div>
-                <div><strong>Prepared By:</strong> On-Site Environmental Officer</div>
+            <div style={{ padding: '8px 0', fontSize: '13px', lineHeight: 1.5 }}>
+              <div style={{ background: '#F8FAFC', padding: '14px 16px', borderRadius: 8, border: '1px solid #E2E8F0', marginBottom: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', fontSize: '12.5px' }}>
+                <div><span style={{ color: '#64748B' }}>Project:</span> <strong style={{ color: '#0F172A' }}>{site.name}</strong></div>
+                <div><span style={{ color: '#64748B' }}>Location:</span> <strong style={{ color: '#0F172A' }}>{site.locationName}</strong></div>
+                <div><span style={{ color: '#64748B' }}>Reporting Period:</span> <strong style={{ color: '#0F172A' }}>October 2026 (Monthly Audit)</strong></div>
+                <div><span style={{ color: '#64748B' }}>Prepared By:</span> <strong style={{ color: '#0F172A' }}>On-Site Environmental Officer</strong></div>
               </div>
 
-              <h3 style={{ fontSize: '14px', margin: '10px 0 6px 0', color: '#0F172A' }}>1. Water & Silt Runoff Compliance</h3>
-              <div className="table-responsive">
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', marginBottom: 12 }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 8px 0', color: '#0F172A' }}>1. Water & Silt Runoff Compliance</h3>
+              <div style={{ border: '1px solid #E2E8F0', borderRadius: 8, overflow: 'hidden', marginBottom: 16 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                   <thead>
-                    <tr style={{ background: '#F1F5F9', textAlign: 'left' }}>
-                      <th style={{ padding: 6 }}>Parameter</th>
-                      <th style={{ padding: 6 }}>Site Average</th>
-                      <th style={{ padding: 6 }}>Statutory Limit</th>
-                      <th style={{ padding: 6 }}>Status</th>
+                    <tr style={{ background: '#F1F5F9', textAlign: 'left', borderBottom: '1px solid #E2E8F0' }}>
+                      <th style={{ padding: '8px 12px', fontWeight: 700, color: '#475569' }}>Parameter</th>
+                      <th style={{ padding: '8px 12px', fontWeight: 700, color: '#475569' }}>Site Average</th>
+                      <th style={{ padding: '8px 12px', fontWeight: 700, color: '#475569' }}>Statutory Limit</th>
+                      <th style={{ padding: '8px 12px', fontWeight: 700, color: '#475569' }}>Status</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr><td style={{ padding: 6 }}>Turbidity</td><td style={{ padding: 6 }}>18.20 NTU</td><td style={{ padding: 6 }}>&lt; 50.00 NTU</td><td style={{ padding: 6, color: '#059669', fontWeight: 700 }}>Pass</td></tr>
-                    <tr><td style={{ padding: 6 }}>Suspended Solids (TSS)</td><td style={{ padding: 6 }}>24.50 mg/L</td><td style={{ padding: 6 }}>&lt; 50.00 mg/L</td><td style={{ padding: 6, color: '#059669', fontWeight: 700 }}>Pass</td></tr>
-                    <tr><td style={{ padding: 6 }}>pH Level</td><td style={{ padding: 6 }}>7.40</td><td style={{ padding: 6 }}>6.00 to 9.00</td><td style={{ padding: 6, color: '#059669', fontWeight: 700 }}>Pass</td></tr>
+                    <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
+                      <td style={{ padding: '8px 12px', fontWeight: 600 }}>Turbidity</td>
+                      <td style={{ padding: '8px 12px' }}>18.20 NTU</td>
+                      <td style={{ padding: '8px 12px', color: '#64748B' }}>&lt; 50.00 NTU</td>
+                      <td style={{ padding: '8px 12px' }}>
+                        <span style={{ background: '#DCFCE7', color: '#15803D', padding: '2px 8px', borderRadius: 999, fontWeight: 700, fontSize: '11px' }}>✓ Pass</span>
+                      </td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
+                      <td style={{ padding: '8px 12px', fontWeight: 600 }}>Suspended Solids (TSS)</td>
+                      <td style={{ padding: '8px 12px' }}>24.50 mg/L</td>
+                      <td style={{ padding: '8px 12px', color: '#64748B' }}>&lt; 50.00 mg/L</td>
+                      <td style={{ padding: '8px 12px' }}>
+                        <span style={{ background: '#DCFCE7', color: '#15803D', padding: '2px 8px', borderRadius: 999, fontWeight: 700, fontSize: '11px' }}>✓ Pass</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '8px 12px', fontWeight: 600 }}>pH Level</td>
+                      <td style={{ padding: '8px 12px' }}>7.40</td>
+                      <td style={{ padding: '8px 12px', color: '#64748B' }}>6.00 to 9.00</td>
+                      <td style={{ padding: '8px 12px' }}>
+                        <span style={{ background: '#DCFCE7', color: '#15803D', padding: '2px 8px', borderRadius: 999, fontWeight: 700, fontSize: '11px' }}>✓ Pass</span>
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
 
-              <h3 style={{ fontSize: '14px', margin: '10px 0 6px 0', color: '#0F172A' }}>2. Boundary Acoustic Compliance (DOE Schedule 6)</h3>
-              <div style={{ background: '#ECFDF5', padding: 10, borderRadius: 6, color: '#065F46', fontSize: '12px', marginBottom: 12 }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 8px 0', color: '#0F172A' }}>2. Boundary Acoustic Compliance (DOE Schedule 6)</h3>
+              <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '10px 14px', borderRadius: 8, color: '#166534', fontSize: '12.5px', marginBottom: 16 }}>
                 ✓ Daytime Boundary Sound: <strong>52.40 dBA</strong> (Limit: 60.00 dBA). Zero statutory noise exceedances logged. Diesel generator locked 100% OFF.
               </div>
 
-              <h3 style={{ fontSize: '14px', margin: '10px 0 6px 0', color: '#0F172A' }}>3. Inspection Checklist Summary</h3>
-              <div style={{ fontSize: '12px', color: '#475569', marginBottom: 12 }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 6px 0', color: '#0F172A' }}>3. Inspection Checklist Summary</h3>
+              <div style={{ fontSize: '12.5px', color: '#334155', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 14px', borderRadius: 8, marginBottom: 16 }}>
                 All 5 daily inspection categories (Silt traps, silt fences, chemical bunding, wheel wash, and waste segregation) verified with timestamped photo evidence.
               </div>
 
-              <h3 style={{ fontSize: '14px', margin: '10px 0 6px 0', color: '#0F172A' }}>4. Community Complaints</h3>
-              <div style={{ fontSize: '12px', color: '#475569' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 6px 0', color: '#0F172A' }}>4. Community Complaints</h3>
+              <div style={{ fontSize: '12.5px', color: '#334155', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 14px', borderRadius: 8 }}>
                 {complaints.length} community inquiries received; {complaints.filter((c) => c.closed).length} resolved on site within 20 minutes with zero municipal stop-work compound notices.
               </div>
             </div>
 
-            <div className="modal-actions" style={{ marginTop: 16 }}>
-              <button className="btn btn-ghost" onClick={() => window.print()}>Print / Save PDF</button>
+            <div className="modal-actions" style={{ marginTop: 20 }}>
+              <button className="btn btn-ghost" onClick={() => window.print()}>🖨️ Print / Save PDF</button>
               <button className="btn btn-primary" onClick={() => setShowReportModal(false)}>Close Summary</button>
             </div>
           </div>

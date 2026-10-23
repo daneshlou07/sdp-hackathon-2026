@@ -175,28 +175,11 @@ The Main Contractor shall deploy a Containerized Battery Energy Storage System (
         <div>
           <h1>HQ Executive Dashboard</h1>
           <p>
-            Track group savings, site performance, and energy costs across all projects.
+            Monitor savings, site performance, and energy costs across all projects.
           </p>
         </div>
         <div className="top-meta" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <button
-            onClick={() => setShowAddSiteModal(true)}
-            style={{
-              padding: '6px 14px',
-              backgroundColor: '#D71920',
-              color: '#FFFFFF',
-              borderRadius: '8px',
-              border: 'none',
-              fontWeight: 700,
-              fontSize: '13px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            <span>+</span> Add New Project
-          </button>
+
           <div className="card" style={{ padding: '6px 12px', fontSize: '12.5px', fontWeight: 600, color: '#0F172A' }}>
             Current Diesel Price : RM {dieselPrice.toFixed(2)} / L
           </div>
